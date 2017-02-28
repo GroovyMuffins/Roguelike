@@ -99,22 +99,64 @@ def create_v_tunnel(y_1, y_2, x_value):
 
 def make_map():
     """fill map with "unblocked" tiles"""
-    global GAME_MAP
+    global GAME_MAP, PLAYER
 
     GAME_MAP = [[Tile(True) for y in range(MAP_HEIGHT)] for x in range(MAP_WIDTH)]
 
-    #create two rooms
-    room1 = Rect(20, 15, 10, 15)
-    room2 = Rect(50, 15, 10, 15)
-    create_room(room1)
-    create_room(room2)
+    rooms = []
+    num_rooms = 0
+    for room in range(MAX_ROOMS):
+        #random width and height
+        width = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
+        height = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
+        #random position without going out of the boundaries of the map
+        x_value = libtcod.random_get_int(0, 0, MAP_WIDTH - width - 1)
+        y_value = libtcod.random_get_int(0, 0, MAP_HEIGHT - height - 1)
 
-    #connect them with a tunnel
-    create_h_tunnel(25, 55, 23)
+        #"Rect" class makes rectangles easier to work with
+        new_room = Rect(x_value, y_value, width, height)
 
-    #place the player inside the first room
-    PLAYER.x_value = 25
-    PLAYER.y_value = 23
+        #run through the other rooms and see if they intersect with this one
+        failed = False
+        for other_room in rooms:
+            if new_room.intersect(other_room):
+                failed = True
+                break
+        
+        if not failed:
+            #this means there are no intersections, so this room is valid
+
+            #"paint" it to the map's tiles
+            create_room(new_room)
+
+            #center coordinates of new room, will be useful later
+            (new_x, new_y) = new_room.center()
+
+            if num_rooms == 0:
+                #this is the first room, where the player starts at
+                PLAYER.x_value = new_x
+                PLAYER.y_value = new_y
+
+            else:
+                #all rooms after the first:
+                #connect it to the previous room with a tunnel
+
+                #center coordinates of the previous room
+                (prev_x, prev_y) = rooms[num_rooms - 1].center()
+
+                #draw a coin (random number that is either 0 or 1)
+                if libtcod.random_get_int(0, 0, 1) == 1:
+                    #first move horizontally, then vertically
+                    create_h_tunnel(prev_x, new_x, prev_y)
+                    create_v_tunnel(prev_y, new_y, prev_x)
+                else:
+                    #first move vertically, then horizontally
+                    create_v_tunnel(prev_y, new_y, prev_x)
+                    create_h_tunnel(prev_x, new_x, prev_y)
+            
+            #finally, append the new room to the list
+            rooms.append(new_room)
+            num_rooms += 1
 
 def render_all():
     """Draw all objects in the list"""
