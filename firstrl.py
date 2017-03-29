@@ -251,6 +251,27 @@ def render_all():
     #blit the contents of "con" to the root console
     libtcod.console_blit(CON, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
 
+def player_move_or_attack(dx, dy):
+    global fov_recompute
+
+    #the coordinates the payer is moving to/attacking
+    x = PLAYER.x + dx
+    y = PLAYER.y + dy
+
+    #try to find an attackable object there
+    target = None
+    for g_object in GAME_OBJECTS:
+        if g_object.x == x and g_object.y == y:
+            target = g_object
+            break
+    
+    #attack if target found, move otherwise
+    if target is not None:
+        print 'The ' + target.name + ' laughs at your puny efforts to attack him!'
+    else:
+        PLAYER.move(dx, dy)
+        fov_recompute = True
+
 def handle_keys():
     """Handle keyboard movement."""
     global fov_recompute
@@ -267,23 +288,21 @@ def handle_keys():
     if game_state == 'playing':
         #movement keys
         if libtcod.console_is_key_pressed(libtcod.KEY_UP):
-            PLAYER.move(0, -1)
-            fov_recompute = True
+            player_move_or_attack(0, -1)
 
         elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN):
-            PLAYER.move(0, 1)
-            fov_recompute = True
+            player_move_or_attack(0, 1)
 
         elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT):
-            PLAYER.move(-1, 0)
-            fov_recompute = True
+            player_move_or_attack(-1, 0)
 
         elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT):
-            PLAYER.move(1, 0)
-            fov_recompute = True
+            player_move_or_attack(1, 0)
+
         else:
             return 'didnt-take-turn'
 
+    
 
 #############################################
 # Initialization & Main Loop
@@ -328,3 +347,9 @@ while not libtcod.console_is_window_closed():
     player_action = handle_keys()
     if player_action == 'exit':
         break
+    
+    #let monster take their turn
+    if game_state == 'playing' and player_action != 'didnt-take-turn':
+        for g_object in GAME_OBJECTS:
+            if g_object != PLAYER:
+                print 'The ' + g_object.name + ' growls!'
