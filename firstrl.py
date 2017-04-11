@@ -76,8 +76,8 @@ class Object:
     def __init__(self, x, y, char, name, color, blocks=False, fighter=None, ai=None):
         self.x = x
         self.y = y
-        self.name = name
         self.char = char
+        self.name = name
         self.color = color
         self.blocks = blocks
 
@@ -138,21 +138,10 @@ class Fighter:
         self.defense = defense
         self.power = power
         self.death_function = death_function
-    
-    def take_damage(self, damage):
-        #apply damage if possible
-        if damage > 0:
-            self.hp -= damage
         
-        #check for death. if there's a death function, call it
-        if self.hp <= 0:
-            function = self.death_function
-            if function is not None:
-                function(self.owner)
-    
     def attack(self, target):
         #a simple formula for attack damage
-        damage = self.power + target.fighter.defense
+        damage = self.power - target.fighter.defense
 
         if damage > 0:
             #make the target take some damage
@@ -160,6 +149,17 @@ class Fighter:
             target.fighter.take_damage(damage)
         else:
             message(self.owner.name.capitalize() + ' attacks ' + target.name + ' but it has no effect!')
+
+    def take_damage(self, damage):
+        #apply damage if possible
+        if damage > 0:
+            self.hp -= damage
+        
+            #check for death. if there's a death function, call it
+            if self.hp <= 0:
+                function = self.death_function
+                if function is not None:
+                    function(self.owner)
 
 class BasicMonster:
     #AI for a basic monster.
@@ -405,6 +405,10 @@ def render_all():
     render_bar(1, 1, BAR_WIDTH, 'HP', PLAYER.fighter.hp, PLAYER.fighter.max_hp,
         libtcod.light_red, libtcod.darker_red)
 
+    #display names of objects under the mouse
+    libtcod.console_set_default_foreground(panel, libtcod.light_gray)
+    libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, get_names_under_mouse())
+
     #blit the contents of "panel" to the root console
     libtcod.console_blit(panel, 0, 0, SCREEN_WIDTH, PANEL_HEIGHT, 0, 0, PANEL_Y)
     
@@ -444,9 +448,9 @@ def message(new_msg, color = libtcod.white):
 
 def handle_keys():
     """Handle keyboard movement."""
-    global fov_recompute
+    global fov_recompute, key
     # key = libtcod.console_check_for_keypress() #real-time
-    key = libtcod.console_wait_for_keypress(True) #turn-based
+    # key = libtcod.console_wait_for_keypress(True) #turn-based
 
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         #Alt+Enter: toggle fullscreen
@@ -457,21 +461,32 @@ def handle_keys():
 
     if game_state == 'playing':
         #movement keys
-        if libtcod.console_is_key_pressed(libtcod.KEY_UP):
+        if key.vk == libtcod.KEY_UP:
             player_move_or_attack(0, -1)
 
-        elif libtcod.console_is_key_pressed(libtcod.KEY_DOWN):
+        elif key.vk == libtcod.KEY_DOWN:
             player_move_or_attack(0, 1)
 
-        elif libtcod.console_is_key_pressed(libtcod.KEY_LEFT):
+        elif key.vk == libtcod.KEY_LEFT:
             player_move_or_attack(-1, 0)
 
-        elif libtcod.console_is_key_pressed(libtcod.KEY_RIGHT):
+        elif key.vk == libtcod.KEY_RIGHT:
             player_move_or_attack(1, 0)
 
         else:
             return 'didnt-take-turn'
 
+def get_names_under_mouse():
+    global mouse
+
+    #return a string with the names of all objects under the mouse
+    (x, y) = (mouse.cx, mouse.cy)
+
+    #create a list with the names of all objects at the mouse's coordinates
+    names = [g_object.name for g_object in GAME_OBJECTS
+        if g_object.x == x and g_object.y == y and libtcod.map_is_in_fov(fov_map, g_object.x, g_object.y)]
+    names = ', '.join(names) # join the names, separated by commas
+    return names.capitalize()
     
 
 #############################################
@@ -511,7 +526,12 @@ message('Welcome stranger! Prepare to perish in the Tombs of the Acnicent Kings.
 
 panel = libtcod.console_new(SCREEN_WIDTH, PANEL_HEIGHT)
 
+mouse = libtcod.Mouse()
+key = libtcod.Key()
+
 while not libtcod.console_is_window_closed():
+
+    libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE_MOVE, key, mouse)
 
     #render the screen
     render_all()
