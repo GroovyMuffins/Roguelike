@@ -32,6 +32,8 @@ MAX_ROOM_ITEMS = 2
 HEAL_AMOUNT = 4
 LIGHTNING_RANGE = 5
 LIGHTNING_DAMAGE = 20
+CONFUSE_NUM_TURNS = 10
+CONFUSE_RANGE = 8
 
 
 FOV_ALGO = 0 #default FOV algorithm
@@ -215,6 +217,22 @@ class Item:
             inventory.append(self.owner)
             GAME_OBJECTS.remove(self.owner)
             message('You picked up a ' + self.owner.name + '!', libtcod.green)
+    
+class ConfusedMonster:
+    #AI for a temporarily confused monster (reerts to previous AI after a while).
+    def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
+        self.old_ai = old_ai
+        self.num_turns = num_turns
+
+    #AI for a confused monster.
+    def take_turn(self):
+        if self.num_turns > 0: #still confused...
+            #move in a random direction, and decrease the number of turns confused
+            self.owner.move(libtcod.random_get_int(0, -1, 1), libtcod.random_get_int(0, -1, 1))
+            self.num_turns -= 1
+        else: #restore the previous AI (this one will be deleted because it's not referenced anymore)
+            self.owner.ai = self.old_ai
+            message('The ' + self.owner.name + ' i no longer confused!', libtcod.red)
 
 def cast_heal():
     #heal the player
@@ -236,6 +254,19 @@ def cast_lightning():
     message('A lightning bolt strikes the ' + monster.name + ' with a loud thunder! The damage is '
         + str(LIGHTNING_DAMAGE) + ' hit points.', color = libtcod.light_blue)
     monster.fighter.take_damage(LIGHTNING_DAMAGE)
+
+def cast_confuse():
+    #find closest enemy in-range and confuse it
+    monster = closest_monster(CONFUSE_RANGE)
+    if monster is None: #no enemy found within maximum range
+        message('No enemy is close enough to confuse.', libtcod.red)
+        return 'cancelled'
+    
+    #replace the monster's AI with a "confused" one; after some turns it will restore the old AI
+    old_ai = monster.ai
+    monster.ai = ConfusedMonster(old_ai)
+    monster.ai.owner = monster #tell the new component who owns it
+    message('The eyes of the ' + monster.name + ' look vacant, as he starts to stumble around!', libtcod.light_green)
 
 def closest_monster(max_range):
     #find closest enemy, up to a maximum range, and in the player's FOV
@@ -417,11 +448,16 @@ def place_objects(room):
                 item_component = Item(use_function=cast_heal)
 
                 item = Object(x, y, '!', 'healing potion', libtcod.violet, item=item_component)
-            else:
-                #create a lightning bolt scroll (30% chance)
+            elif dice < 70 + 15:
+                #create a lightning bolt scroll (15% chance)
                 item_component = Item(use_function=cast_lightning)
 
                 item = Object(x, y, '#', 'scroll of lightning bolt', libtcod.light_yellow, item=item_component)
+            else:
+                #create a confuse scroll (15% chance)
+                item_component = Item(use_function=cast_confuse)
+
+                item = Object(x, y, '#', 'scroll of confusion', libtcod.light_yellow, item=item_component)
 
             GAME_OBJECTS.append(item)
             item.send_to_back() #items appear below other objects
