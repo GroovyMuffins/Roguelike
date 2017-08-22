@@ -82,13 +82,14 @@ class Rect:
 class Object:
     """This is generic object: the player, a monster, an tiem, the stairs...
     it's always represented by a character on screen."""
-    def __init__(self, x, y, char, name, color, blocks=False, fighter=None, ai=None, item=None):
+    def __init__(self, x, y, char, name, color, blocks=False, always_visible=False, fighter=None, ai=None, item=None):
         self.x = x
         self.y = y
         self.char = char
         self.name = name
         self.color = color
         self.blocks = blocks
+        self.always_visible = always_visible
 
         self.fighter = fighter
         if self.fighter: #let the fighter component know who owns it
@@ -134,8 +135,9 @@ class Object:
 
     def draw(self):
         """set the color and then draw the character that represents this object at its position"""
-        #only show if it's visible to the player
-        if libtcod.map_is_in_fov(fov_map, self.x, self.y):
+        #only show if it's visible to the player; or it's set to "always visible" and on an explored tile
+        if (libtcod.map_is_in_fov(fov_map, self.x, self.y) or
+            (self.always_visible and GAME_MAP[self.x][self.y].explored)):
             libtcod.console_set_default_foreground(CON, self.color)
             libtcod.console_put_char(CON, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
@@ -312,7 +314,7 @@ def create_v_tunnel(y1, y2, x):
 
 def make_map():
     """fill map with "unblocked" tiles"""
-    global GAME_MAP, GAME_OBJECTS
+    global GAME_MAP, GAME_OBJECTS, stairs
 
     #the list of objects with just the player
     GAME_OBJECTS = [PLAYER]
@@ -377,6 +379,11 @@ def make_map():
             rooms.append(new_room)
             num_rooms += 1
 
+    #create stairs at the center of the last room
+    stairs = Object(new_x, new_y, '<', 'stairs', libtcod.white, always_visible=True)
+    GAME_OBJECTS.append(stairs)
+    stairs.send_to_back() #so it's drawn below the monsters
+
 def place_objects(room):
     #choose random number of monsters
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
@@ -420,12 +427,12 @@ def place_objects(room):
                 #create a healing potion (70% chance)
                 item_component = Item(use_function=cast_heal)
 
-                item = Object(x, y, '!', 'healing potion', libtcod.violet, item=item_component)
+                item = Object(x, y, '!', 'healing potion', libtcod.violet, item=item_component, always_visible=True)
             else:
                 #create a lightning bolt scroll (30% chance)
                 item_component = Item(use_function=cast_lightning)
 
-                item = Object(x, y, '#', 'scroll of lightning bolt', libtcod.light_yellow, item=item_component)
+                item = Object(x, y, '#', 'scroll of lightning bolt', libtcod.light_yellow, item=item_component, always_visible=True)
 
             GAME_OBJECTS.append(item)
             item.send_to_back() #items appear below other objects
@@ -508,6 +515,8 @@ def render_all():
     #show the player's stats
     render_bar(1, 1, BAR_WIDTH, 'HP', PLAYER.fighter.hp, PLAYER.fighter.max_hp,
         libtcod.light_red, libtcod.darker_red)
+    
+    libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT, 'Dungeon level' + str(dungeon_level))
 
     #display names of objects under the mouse
     libtcod.console_set_default_foreground(panel, libtcod.light_gray)
@@ -592,8 +601,23 @@ def handle_keys():
                 chosen_item = inventory_menu('Press the key next to an item to use it, or any other to cancel.\n')
                 if chosen_item is not None:
                     chosen_item.use()
+            if key_char == '<':
+                #go down stairs, if the player is on them
+                if stairs.x == PLAYER.x and stairs.y == PLAYER.y:
+                    next_level()
 
             return 'didnt-take-turn'
+
+def next_level():
+    #advance to the next level
+    global dungeon_level    
+    message('You take a moment to rest, and recover your strength.', libtcod.light_violet)
+    PLAYER.fighter.heal(PLAYER.fighter.max_hp / 2) #heal the player by 50%
+
+    dungeon_level += 1
+    message('After a rare moment of peace, you descend deeper into the heart of the dungeon...', libtcod.red)
+    make_map() #create a fresh new level!
+    initialize_fov()
 
 def get_names_under_mouse():
     global mouse
@@ -662,13 +686,14 @@ def inventory_menu(header):
     return inventory[index].item
 
 def new_game():
-    global PLAYER, inventory, game_msgs, game_state
+    global PLAYER, inventory, game_msgs, game_state, dungeon_level
 
     #create object representing the player
     fighter_component = Fighter(hp=30, defense=2, power=5, death_function=player_death)
     PLAYER = Object(0, 0, '@', 'player', libtcod.white, blocks=True, fighter=fighter_component)
 
     #generate map (at this point it's not drawn to the screen)
+    dungeon_level = 1
     make_map()
     initialize_fov()
 
@@ -763,6 +788,8 @@ def save_game():
     file['GAME_MAP'] = GAME_MAP
     file['GAME_OBJECTS'] = GAME_OBJECTS
     file['player_index'] = GAME_OBJECTS.index(PLAYER) #index of player in objects lists
+    file['stairs_index'] = GAME_OBJECTS.index(stairs)
+    file['dungeon_level'] = dungeon_level
     file['inventory'] = inventory
     file['game_msgs'] = game_msgs
     file['game_state'] = game_state
@@ -770,12 +797,14 @@ def save_game():
 
 def load_game():
     #open the previously saved shelve and load the game data
-    global GAME_MAP, GAME_OBJECTS, PLAYER, inventory, game_msgs, game_state
+    global GAME_MAP, GAME_OBJECTS, PLAYER, stairs, inventory, game_msgs, game_state, dungeon_level
 
     file = shelve.open('savegame', 'r')
     GAME_MAP = file['GAME_MAP']
     GAME_OBJECTS = file['GAME_OBJECTS']
     PLAYER = GAME_OBJECTS[file['player_index']] #get index of player in objects list and access it
+    stairs = GAME_OBJECTS[file['stairs_index']]
+    dungeon_level = file['dungeon_level']
     inventory = file['inventory']
     game_msgs = file['game_msgs']
     game_state = file['game_state']
