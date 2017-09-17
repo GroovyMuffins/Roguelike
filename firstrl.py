@@ -145,16 +145,16 @@ class Object:
     def send_to_back(self):
         """make this object be drawn first,
         so all others appear above it if they're in the same tile."""
-        global GAME_OBJECTS
-        GAME_OBJECTS.remove(self)
-        GAME_OBJECTS.insert(0, self)
+        global game_objects
+        game_objects.remove(self)
+        game_objects.insert(0, self)
 
     def draw(self):
         """set the color and then draw the character that represents this object at its position"""
         #only show if it's visible to the player;
         #or it's set to "always visible" and on an explored tile
         if libtcod.map_is_in_fov(fov_map, self.x, self.y) or\
-            (self.always_visible and GAME_MAP[self.x][self.y].explored):
+            (self.always_visible and game_map[self.x][self.y].explored):
             libtcod.console_set_default_foreground(CON, self.color)
             libtcod.console_put_char(CON, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
@@ -195,8 +195,8 @@ class Fighter:
                 function = self.death_function
                 if function is not None:
                     function(self.owner)
-                if self.owner != PLAYER: # yield experience to the player
-                    PLAYER.fighter.xp += self.xp
+                if self.owner != player: # yield experience to the player
+                    player.fighter.xp += self.xp
 
     def heal(self, amount):
         """heal by the given amount, without going over the maximum"""
@@ -212,12 +212,12 @@ class BasicMonster:
         if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
 
             #move towards player if far away
-            if monster.distance_to(PLAYER) >= 2:
-                monster.move_towards(PLAYER.x, PLAYER.y)
+            if monster.distance_to(player) >= 2:
+                monster.move_towards(player.x, player.y)
 
             #close enough, attack! (if the player is still alive.)
-            elif PLAYER.fighter.hp > 0:
-                monster.fighter.attack(PLAYER)
+            elif player.fighter.hp > 0:
+                monster.fighter.attack(player)
 
 class Item:
     """Class containing item objects"""
@@ -240,16 +240,16 @@ class Item:
             message('Your inventory is full, cannot pick up ' + self.owner.name + '.', libtcod.red)
         else:
             inventory.append(self.owner)
-            GAME_OBJECTS.remove(self.owner)
+            game_objects.remove(self.owner)
             message('You picked up a ' + self.owner.name + '!', libtcod.green)
 
     def drop(self):
         """add to the map and remove from the player's inventory.
         also, place it at the player's coordinates"""
-        GAME_OBJECTS.append(self.owner)
+        game_objects.append(self.owner)
         inventory.remove(self.owner)
-        self.owner.x = PLAYER.x
-        self.owner.y = PLAYER.y
+        self.owner.x = player.x
+        self.owner.y = player.y
         message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
 
 class ConfusedMonster:
@@ -271,38 +271,38 @@ class ConfusedMonster:
 
 def check_level_up():
     """see if the player's experience is enough to level-up"""
-    level_up_xp = LEVEL_UP_BASE + PLAYER.level * LEVEL_UP_FACTOR
-    if PLAYER.fighter.xp >= level_up_xp:
+    level_up_xp = LEVEL_UP_BASE + player.level * LEVEL_UP_FACTOR
+    if player.fighter.xp >= level_up_xp:
         #it is! level up
-        PLAYER.level += 1
-        PLAYER.fighter.xp -= level_up_xp
+        player.level += 1
+        player.fighter.xp -= level_up_xp
         message('Your battle skills grow stronger! You reached level ' +\
-            str(PLAYER.level) + '!', libtcod.yellow)
+            str(player.level) + '!', libtcod.yellow)
 
         choice = None
         while choice is None: #keep asking until a choice is made
             choice = menu('Level up! Choose a stat to raise:\n',\
-                ['Constitution (+20 HP, from ' + str(PLAYER.fighter.max_hp) + ')',\
-                'Strength (+1 attack, from ' + str(PLAYER.fighter.power) + ')',\
-                'Agility (+1 defense, from ' + str(PLAYER.fighter.defense) + ')'],\
+                ['Constitution (+20 HP, from ' + str(player.fighter.max_hp) + ')',\
+                'Strength (+1 attack, from ' + str(player.fighter.power) + ')',\
+                'Agility (+1 defense, from ' + str(player.fighter.defense) + ')'],\
                 LEVEL_SCREEN_WIDTH)
 
         if choice == 0:
-            PLAYER.fighter.max_hp += 20
-            PLAYER.fighter.hp += 20
+            player.fighter.max_hp += 20
+            player.fighter.hp += 20
         elif choice == 1:
-            PLAYER.fighter.power += 1
+            player.fighter.power += 1
         elif choice == 2:
-            PLAYER.fighter.defense += 1
+            player.fighter.defense += 1
 
 def cast_heal():
     """heal the player"""
-    if PLAYER.fighter.hp == PLAYER.fighter.max_hp:
+    if player.fighter.hp == player.fighter.max_hp:
         message('You are already at full health.', libtcod.red)
         return 'cancelled'
 
     message('Your wounds start to feel better!', libtcod.light_violet)
-    PLAYER.fighter.heal(HEAL_AMOUNT)
+    player.fighter.heal(HEAL_AMOUNT)
 
 def cast_lightning():
     """find closest enemy (inside a maximum range) and damage it"""
@@ -340,7 +340,7 @@ def cast_fireball():
     message('The fireball explodes, burning everything within ' + str(FIREBALL_RADIUS) +\
         ' tiles!', libtcod.orange)
 
-    for obj in GAME_OBJECTS: #damage every fighter in range, including the player
+    for obj in game_objects: #damage every fighter in range, including the player
         if obj.distance(x, y) <= FIREBALL_RADIUS and obj.fighter:
             message('The ' + obj.name + ' gets burned for ' + str(FIREBALL_DAMAGE) +\
                 ' hit points.', libtcod.orange)
@@ -351,11 +351,11 @@ def closest_monster(max_range):
     closest_enemy = None
     closest_dist = max_range + 1 #start with (slightly more than) maximum range
 
-    for g_object in GAME_OBJECTS:
-        if g_object.fighter and g_object != PLAYER and\
+    for g_object in game_objects:
+        if g_object.fighter and g_object != player and\
             libtcod.map_is_in_fov(fov_map, g_object.x, g_object.y):
             #calculate distance between this object and the player
-            dist = PLAYER.distance_to(g_object)
+            dist = player.distance_to(g_object)
             if dist < closest_dist: #it's closer, so remember it
                 closest_enemy = g_object
                 closest_dist = dist
@@ -378,7 +378,7 @@ def target_tile(max_range=None):
             return (None, None) #cancel if the player right-clicked or pressed Escape
 
         if mouse.lbutton_pressed and libtcod.map_is_in_fov(fov_map, x, y) and\
-            (max_range is None or PLAYER.distance(x, y) <= max_range):
+            (max_range is None or player.distance(x, y) <= max_range):
             return (x, y)
 
 def target_monster(max_range=None):
@@ -389,19 +389,19 @@ def target_monster(max_range=None):
             return None
 
         #return the first clicked monster, otherwise continue looping
-        for obj in GAME_OBJECTS:
-            if obj.x == x and obj.y == y and obj.fighter and obj != PLAYER:
+        for obj in game_objects:
+            if obj.x == x and obj.y == y and obj.fighter and obj != player:
                 return obj
 
-def player_death(PLAYER):
+def player_death(player):
     """the game ended!"""
     global game_state
     message('You died!', libtcod.red)
     game_state = 'dead'
 
     #for added effect, transform the player into a corpse!
-    PLAYER.char = '%'
-    PLAYER.color = libtcod.dark_red
+    player.char = '%'
+    player.color = libtcod.dark_red
 
 def monster_death(monster):
     """transform it into a nasty corpse! it doesn't block, can't be attacked and doesn't move"""
@@ -417,11 +417,11 @@ def monster_death(monster):
 
 def is_blocked(x, y):
     """first test the map tile"""
-    if GAME_MAP[x][y].blocked:
+    if game_map[x][y].blocked:
         return True
 
     #now check for any blocking objects
-    for g_object in GAME_OBJECTS:
+    for g_object in game_objects:
         if g_object.blocks and g_object.x == x and g_object.y == y:
             return True
 
@@ -429,36 +429,36 @@ def is_blocked(x, y):
 
 def create_room(room):
     """create room"""
-    global GAME_MAP
+    global game_map
     #go through the tiles in the rectangle and make them passable
     for x in range(room.x1 + 1, room.x2):
         for y in range(room.y1 + 1, room.y2):
-            GAME_MAP[x][y].blocked = False
-            GAME_MAP[x][y].block_sight = False
+            game_map[x][y].blocked = False
+            game_map[x][y].block_sight = False
 
 def create_h_tunnel(x1, x2, y):
     """create horizontal tunnel"""
-    global GAME_MAP
+    global game_map
     #min() and max() are used in case x1>x2
     for x in range(min(x1, x2), max(x1, x2) + 1):
-        GAME_MAP[x][y].blocked = False
-        GAME_MAP[x][y].block_sight = False
+        game_map[x][y].blocked = False
+        game_map[x][y].block_sight = False
 
 def create_v_tunnel(y1, y2, x):
     """create vertical tunnel"""
-    global GAME_MAP
+    global game_map
     for y in range(min(y1, y2), max(y1, y2) + 1):
-        GAME_MAP[x][y].blocked = False
-        GAME_MAP[x][y].block_sight = False
+        game_map[x][y].blocked = False
+        game_map[x][y].block_sight = False
 
 def make_map():
     """fill map with "unblocked" tiles"""
-    global GAME_MAP, GAME_OBJECTS, stairs
+    global game_map, game_objects, stairs
 
     #the list of objects with just the player
-    GAME_OBJECTS = [PLAYER]
+    game_objects = [player]
 
-    GAME_MAP = [[Tile(True) for y in range(MAP_HEIGHT)] for x in range(MAP_WIDTH)]
+    game_map = [[Tile(True) for y in range(MAP_HEIGHT)] for x in range(MAP_WIDTH)]
 
     rooms = []
     num_rooms = 0
@@ -491,8 +491,8 @@ def make_map():
 
             if num_rooms == 0:
                 #this is the first room, where the player starts at
-                PLAYER.x = new_x
-                PLAYER.y = new_y
+                player.x = new_x
+                player.y = new_y
 
             else:
                 #all rooms after the first:
@@ -520,7 +520,7 @@ def make_map():
 
     #create stairs at the center of the last room
     stairs = Object(new_x, new_y, '<', 'stairs', libtcod.white, always_visible=True)
-    GAME_OBJECTS.append(stairs)
+    game_objects.append(stairs)
     stairs.send_to_back() #so it's drawn below the monsters
 
 def place_objects(room):
@@ -551,7 +551,7 @@ def place_objects(room):
                 monster = Object(x, y, 'T', 'troll', libtcod.darker_green,\
                     blocks=True, fighter=fighter_component, ai=ai_component)
 
-            GAME_OBJECTS.append(monster)
+            game_objects.append(monster)
 
     #choose random number of items
     num_items = libtcod.random_get_int(0, 0, MAX_ROOM_ITEMS)
@@ -589,7 +589,7 @@ def place_objects(room):
                 item = Object(x, y, '#', 'scroll of confusion', libtcod.light_yellow,\
                     item=item_component, always_visible=True)
 
-            GAME_OBJECTS.append(item)
+            game_objects.append(item)
             item.send_to_back() #items appear below other objects
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
@@ -612,24 +612,24 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
 def render_all():
     """Draw all objects in the list"""
-    global fov_map, COLOR_DARK_WALL, COLOR_LIGHT_WALL
-    global COLOR_DARK_GROUND, COLOR_LIGHT_GROUND
-    global fov_recompute
+    global fov_map, COLOR_DARK_WALL, COLOR_LIGHT_WALL,\
+        COLOR_DARK_GROUND, COLOR_LIGHT_GROUND,\
+        fov_recompute
 
     if fov_recompute:
         #recompute FOV if needed (the player moved or something)
         fov_recompute = False
         libtcod.map_compute_fov(\
-            fov_map, PLAYER.x, PLAYER.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
+            fov_map, player.x, player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
 
     #go through all tiles, and set their background color
     for y in range(MAP_HEIGHT):
         for x in range(MAP_WIDTH):
             visible = libtcod.map_is_in_fov(fov_map, x, y)
-            wall = GAME_MAP[x][y].block_sight
+            wall = game_map[x][y].block_sight
             if not visible:
                 #if it's not visible right now, the player can only see it if it's explored
-                if GAME_MAP[x][y].explored:
+                if game_map[x][y].explored:
                     if wall:
                         libtcod.console_set_char_background( \
                             CON, x, y, COLOR_DARK_WALL, libtcod.BKGND_SET)
@@ -645,14 +645,14 @@ def render_all():
                     libtcod.console_set_char_background( \
                         CON, x, y, COLOR_LIGHT_GROUND, libtcod.BKGND_SET)
                 #since it's visible, explore it
-                GAME_MAP[x][y].explored = True
+                game_map[x][y].explored = True
 
     #draw all objects in the list, except the player. we want it to
     #always appear over all other objects! so it's drawn later.
-    for g_object in GAME_OBJECTS:
-        if g_object != PLAYER:
+    for g_object in game_objects:
+        if g_object != player:
             g_object.draw()
-    PLAYER.draw()
+    player.draw()
 
     #blit the contents of "con" to the root console
     libtcod.console_blit(CON, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0)
@@ -669,7 +669,7 @@ def render_all():
         y += 1
 
     #show the player's stats
-    render_bar(1, 1, BAR_WIDTH, 'HP', PLAYER.fighter.hp, PLAYER.fighter.max_hp,\
+    render_bar(1, 1, BAR_WIDTH, 'HP', player.fighter.hp, player.fighter.max_hp,\
         libtcod.light_red, libtcod.darker_red)
 
     libtcod.console_print_ex(\
@@ -686,21 +686,21 @@ def player_move_or_attack(dx, dy):
     global fov_recompute
 
     #the coordinates the payer is moving to/attacking
-    x = PLAYER.x + dx
-    y = PLAYER.y + dy
+    x = player.x + dx
+    y = player.y + dy
 
     #try to find an attackable object there
     target = None
-    for g_object in GAME_OBJECTS:
+    for g_object in game_objects:
         if g_object.fighter and g_object.x == x and g_object.y == y:
             target = g_object
             break
 
     #attack if target found, move otherwise
     if target is not None:
-        PLAYER.fighter.attack(target)
+        player.fighter.attack(target)
     else:
-        PLAYER.move(dx, dy)
+        player.move(dx, dy)
         fov_recompute = True
 
 def message(new_msg, color=libtcod.white):
@@ -748,8 +748,8 @@ def handle_keys():
 
             if key_char == 'g':
                 #pick up an item
-                for g_object in GAME_OBJECTS: #look for an item in the player's tile
-                    if g_object.x == PLAYER.x and g_object.y == PLAYER.y and g_object.item:
+                for g_object in game_objects: #look for an item in the player's tile
+                    if g_object.x == player.x and g_object.y == player.y and g_object.item:
                         g_object.item.pick_up()
                         break
 
@@ -769,18 +769,18 @@ def handle_keys():
 
             if key_char == 'u':
                 #go down stairs, if the player is on them
-                if stairs.x == PLAYER.x and stairs.y == PLAYER.y:
+                if stairs.x == player.x and stairs.y == player.y:
                     next_level()
 
             if key_char == 'c':
                 #show character information
-                level_up_xp = LEVEL_UP_BASE + PLAYER.level * LEVEL_UP_FACTOR
-                msgbox('Character Information\n\nLevel ' + str(PLAYER.level) +\
-                    '\nExperience: ' + str(PLAYER.fighter.xp) +\
+                level_up_xp = LEVEL_UP_BASE + player.level * LEVEL_UP_FACTOR
+                msgbox('Character Information\n\nLevel ' + str(player.level) +\
+                    '\nExperience: ' + str(player.fighter.xp) +\
                     '\nExperience to level up: ' + str(level_up_xp) +\
-                    '\n\nMaximum HP: ' + str(PLAYER.fighter.max_hp) +\
-                    '\nAttack: ' + str(PLAYER.fighter.power) +\
-                    '\nDefense: ' + str(PLAYER.fighter.defense), CHARACTER_SCREEN_WIDTH)
+                    '\n\nMaximum HP: ' + str(player.fighter.max_hp) +\
+                    '\nAttack: ' + str(player.fighter.power) +\
+                    '\nDefense: ' + str(player.fighter.defense), CHARACTER_SCREEN_WIDTH)
 
             return 'didnt-take-turn'
 
@@ -788,7 +788,7 @@ def next_level():
     """advance to the next level"""
     global dungeon_level
     message('You take a moment to rest, and recover your strength.', libtcod.light_violet)
-    PLAYER.fighter.heal(PLAYER.fighter.max_hp / 2) #heal the player by 50%
+    player.fighter.heal(player.fighter.max_hp / 2) #heal the player by 50%
 
     dungeon_level += 1
     message('After a rare moment of peace, you descend deeper into the heart of the dungeon...',\
@@ -803,7 +803,7 @@ def get_names_under_mouse():
     (x, y) = (mouse.cx, mouse.cy)
 
     #create a list with the names of all objects at the mouse's coordinates
-    names = [g_object.name for g_object in GAME_OBJECTS\
+    names = [g_object.name for g_object in game_objects\
         if g_object.x == x and g_object.y == y and\
         libtcod.map_is_in_fov(fov_map, g_object.x, g_object.y)]
     names = ', '.join(names) # join the names, separated by commas
@@ -867,13 +867,13 @@ def inventory_menu(header):
 
 def new_game():
     """create a new game"""
-    global PLAYER, inventory, game_msgs, game_state, dungeon_level
+    global player, inventory, game_msgs, game_state, dungeon_level
 
     #create object representing the player
     fighter_component = Fighter(hp=30, defense=2, power=5, xp=0, death_function=player_death)
-    PLAYER = Object(0, 0, '@', 'player', libtcod.white, blocks=True, fighter=fighter_component)
+    player = Object(0, 0, '@', 'player', libtcod.white, blocks=True, fighter=fighter_component)
 
-    PLAYER.level = 1
+    player.level = 1
 
     #generate map (at this point it's not drawn to the screen)
     dungeon_level = 1
@@ -899,7 +899,7 @@ def initialize_fov():
     for y in range(MAP_HEIGHT):
         for x in range(MAP_WIDTH):
             libtcod.map_set_properties(\
-                fov_map, x, y, not GAME_MAP[x][y].block_sight, not GAME_MAP[x][y].blocked)
+                fov_map, x, y, not game_map[x][y].block_sight, not game_map[x][y].blocked)
 
     libtcod.console_clear(CON) #unexplored areas start black (which is the default background color)
 
@@ -922,7 +922,7 @@ def play_game():
         check_level_up()
 
         #erase all objects at their old locations, before they move
-        for obj in GAME_OBJECTS:
+        for obj in game_objects:
             obj.clear()
 
         #handle keys and exit game if needed
@@ -933,7 +933,7 @@ def play_game():
 
         #let monsters take their turn
         if game_state == 'playing' and player_action != 'didnt-take-turn':
-            for obj in GAME_OBJECTS:
+            for obj in game_objects:
                 if obj.ai:
                     obj.ai.take_turn()
 
@@ -977,10 +977,10 @@ def msgbox(text, width=50):
 def save_game():
     """open a new empty shelve (possibly overwriting an old one) to write the game data"""
     file = shelve.open('savegame', 'n')
-    file['GAME_MAP'] = GAME_MAP
-    file['GAME_OBJECTS'] = GAME_OBJECTS
-    file['player_index'] = GAME_OBJECTS.index(PLAYER) #index of player in objects lists
-    file['stairs_index'] = GAME_OBJECTS.index(stairs)
+    file['game_map'] = game_map
+    file['game_objects'] = game_objects
+    file['player_index'] = game_objects.index(player) #index of player in objects lists
+    file['stairs_index'] = game_objects.index(stairs)
     file['dungeon_level'] = dungeon_level
     file['inventory'] = inventory
     file['game_msgs'] = game_msgs
@@ -989,13 +989,13 @@ def save_game():
 
 def load_game():
     """open the previously saved shelve and load the game data"""
-    global GAME_MAP, GAME_OBJECTS, PLAYER, stairs, inventory, game_msgs, game_state, dungeon_level
+    global game_map, game_objects, player, stairs, inventory, game_msgs, game_state, dungeon_level
 
     file = shelve.open('savegame', 'r')
-    GAME_MAP = file['GAME_MAP']
-    GAME_OBJECTS = file['GAME_OBJECTS']
-    PLAYER = GAME_OBJECTS[file['player_index']] #get index of player in objects list and access it
-    stairs = GAME_OBJECTS[file['stairs_index']]
+    game_map = file['game_map']
+    game_objects = file['game_objects']
+    player = game_objects[file['player_index']] #get index of player in objects list and access it
+    stairs = game_objects[file['stairs_index']]
     dungeon_level = file['dungeon_level']
     inventory = file['inventory']
     game_msgs = file['game_msgs']
