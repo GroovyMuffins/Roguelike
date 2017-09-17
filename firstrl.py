@@ -1,9 +1,9 @@
 #!/c/Python27/python
 """This module sets up initial rogue basin game."""
-import libtcodpy as libtcod
 import math
 import textwrap
 import shelve
+import libtcodpy as libtcod
 
 #actual size of the window
 SCREEN_WIDTH = 80
@@ -526,6 +526,8 @@ def make_map():
 def place_objects(room):
     """choose random number of monsters"""
     num_monsters = libtcod.random_get_int(0, 0, MAX_ROOM_MONSTERS)
+    monster_chances = {'orc': 80, 'troll': 20}
+    item_chances = {'heal': 70, 'lightning': 10, 'fireball': 10, 'confuse': 10}
 
     for _ in range(num_monsters):
         #choose random spot for this monster
@@ -534,7 +536,8 @@ def place_objects(room):
 
         #only place it if the tile is not blocked
         if not is_blocked(x, y):
-            if libtcod.random_get_int(0, 0, 100) < 80: #80% chance of getting an orc
+            choice = random_choice(monster_chances)
+            if choice == 'orc':
                 #create an orc
                 fighter_component = Fighter(\
                     hp=10, defense=0, power=3, xp=35, death_function=monster_death)
@@ -542,7 +545,7 @@ def place_objects(room):
 
                 monster = Object(x, y, 'o', 'orc', libtcod.desaturated_green,\
                     blocks=True, fighter=fighter_component, ai=ai_component)
-            else:
+            elif choice == 'troll':
                 #create a troll
                 fighter_component = Fighter(\
                     hp=16, defense=1, power=4, xp=100, death_function=monster_death)
@@ -563,26 +566,26 @@ def place_objects(room):
 
         #only place it if the tile is not blocked
         if not is_blocked(x, y):
-            dice = libtcod.random_get_int(0, 0, 100)
-            if dice < 70:
+            choice = random_choice(item_chances)
+            if choice == 'heal':
                 #create a healing potion (70% chance)
                 item_component = Item(use_function=cast_heal)
 
                 item = Object(x, y, '!', 'healing potion', libtcod.violet,\
                     item=item_component, always_visible=True)
-            elif dice < 70+10:
+            elif choice == 'lightning':
                 #create a lightning bolt scroll (10% chance)
                 item_component = Item(use_function=cast_lightning)
 
                 item = Object(x, y, '#', 'scroll of lightning bolt', libtcod.light_yellow,\
                     item=item_component, always_visible=True)
-            elif dice < 70+10+10:
+            elif choice == 'fireball':
                 #create a fireball scroll (10% chance)
                 item_component = Item(use_function=cast_fireball)
 
                 item = Object(x, y, '#', 'scroll of fireball', libtcod.light_yellow,\
                     item=item_component, always_visible=True)
-            else:
+            elif choice == 'confuse':
                 #create a confuse scroll (10% chance)
                 item_component = Item(use_function=cast_confuse)
 
@@ -591,6 +594,29 @@ def place_objects(room):
 
             game_objects.append(item)
             item.send_to_back() #items appear below other objects
+            item.always_visible = True # items are visible even out-of-FOV, if in an explored area
+
+def random_choice_index(chances):
+    """Choose one option from the list of chances, returning its index"""
+    # the dice will land on some number between 1 and the sum of the chances
+    dice = libtcod.random_get_int(0, 1, sum(chances))
+
+    # go through all chances, keeping the sum so far
+    running_sum = 0
+    choice = 0
+    for w in chances:
+        running_sum += w
+
+        # see if the dice landed in the part that corresponds to this choice
+        if dice <= running_sum:
+            return choice
+        choice += 1
+
+def random_choice(chances_dict):
+    """Choose one option from dictionary of chances, returning its key"""
+    chances = chances_dict.values()
+    strings = chances_dict.keys()
+    return strings[random_choice_index(chances)]
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     """render a bar (HP, experience, etc). first calculate the widt o the bar"""
