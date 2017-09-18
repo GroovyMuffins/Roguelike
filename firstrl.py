@@ -91,7 +91,7 @@ class Object:
     """This is generic object: the player, a monster, an tiem, the stairs...
     it's always represented by a character on screen."""
     def __init__(self, x, y, char, name, color, blocks=False,\
-        always_visible=False, fighter=None, ai=None, item=None):
+        always_visible=False, fighter=None, ai=None, item=None, equipment=None):
         self.x = x
         self.y = y
         self.char = char
@@ -110,6 +110,14 @@ class Object:
 
         self.item = item
         if self.item: #let the Item component know who owns it
+            self.item.owner = self
+
+        self.equipment = equipment
+        if self.equipment: # let the Equipment component know who owns it
+            self.equipment.owner = self
+
+            # there must be and Item component for the Equipment component to work properly
+            self.item = Item()
             self.item.owner = self
 
     def move(self, dx, dy):
@@ -224,6 +232,12 @@ class Item:
 
     def use(self):
         """just call the "use_function" if it is defined"""
+        # special case: if the object has the Equipment component,
+        # the "use" action is to equip/dequip
+        if self.owner.equipment:
+            self.owner.equipment.toggle_equip()
+            return
+
         if self.use_function is None:
             message('The '+ self.owner.name + ' cannot be used.')
         else:
@@ -266,6 +280,34 @@ class ConfusedMonster:
         else:
             self.owner.ai = self.old_ai
             message('The ' + self.owner.name + ' i no longer confused!', libtcod.red)
+
+class Equipment:
+    """An object that can be equipped, yielding bonuses.
+    Automatically adds the Item component."""
+    def __init__(self, slot):
+        self.slot = slot
+        self.is_equipped = False
+
+    def toggle_equip(self):
+        """Toggle equip/dequip status"""
+        if self.is_equipped:
+            self.dequip()
+        else:
+            self.equip()
+
+    def equip(self):
+        """Equip object and show a message about it"""
+        self.is_equipped = True
+        message('Equipped ' + self.owner.name + ' on ' + self.slot + '.',\
+            libtcod.light_green)
+
+    def dequip(self):
+        """Dequip object and show a mesage about it"""
+        if not self.is_equipped:
+            return
+        self.is_equipped = False
+        message('Dequipped ' + self.owner.name + ' from ' + self.slot + '.',\
+            libtcod.light_yellow)
 
 def check_level_up():
     """see if the player's experience is enough to level-up"""
@@ -543,6 +585,7 @@ def place_objects(room):
     item_chances['lightning'] = from_dungeon_level([[25, 4]])
     item_chances['fireball'] = from_dungeon_level([[25, 6]])
     item_chances['confuse'] = from_dungeon_level([[10, 2]])
+    item_chances['sword'] = 25
 
     for _ in range(num_monsters):
         #choose random spot for this monster
@@ -603,6 +646,10 @@ def place_objects(room):
 
                 item = Object(x, y, '#', 'scroll of confusion', libtcod.light_yellow,\
                     item=item_component, always_visible=True)
+            elif choice == 'sword':
+                # create a sword
+                equipment_component = Equipment(slot='right hand')
+                item = Object(x, y, '/', 'sword', libtcod.sky, equipment=equipment_component)
 
             game_objects.append(item)
             item.send_to_back() #items appear below other objects
