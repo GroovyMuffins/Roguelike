@@ -255,6 +255,11 @@ class Item:
             game_objects.remove(self.owner)
             message('You picked up a ' + self.owner.name + '!', libtcod.green)
 
+        # special case: automatically equip, if the corresponding equipment slot is unused
+        equipment = self.owner.equipment
+        if equipment and get_equipped_in_slot(equipment.slot) is None:
+            equipment.equip()
+
     def drop(self):
         """add to the map and remove from the player's inventory.
         also, place it at the player's coordinates"""
@@ -263,6 +268,10 @@ class Item:
         self.owner.x = player.x
         self.owner.y = player.y
         message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
+
+        # special case: if the object has the Equipment component, dequip it before dropping
+        if self.owner.equipment:
+            self.owner.equipment.dequip()
 
 class ConfusedMonster:
     """AI for a temporarily confused monster (reerts to previous AI after a while)."""
@@ -296,7 +305,13 @@ class Equipment:
             self.equip()
 
     def equip(self):
-        """Equip object and show a message about it"""
+        """Equip equipment"""
+        # if the slot is already being used, dequip whatever is there first
+        old_equipment = get_equipped_in_slot(self.slot)
+        if old_equipment is not None:
+            old_equipment.dequip()
+
+        # equip object and show a message about it
         self.is_equipped = True
         message('Equipped ' + self.owner.name + ' on ' + self.slot + '.',\
             libtcod.light_green)
@@ -308,6 +323,13 @@ class Equipment:
         self.is_equipped = False
         message('Dequipped ' + self.owner.name + ' from ' + self.slot + '.',\
             libtcod.light_yellow)
+
+def get_equipped_in_slot(slot):
+    """Returns the equipment in a slot, or None if it's empty"""
+    for obj in inventory:
+        if obj.equipment and obj.equipment.slot == slot and obj.equipment.is_equipped:
+            return obj.equipment
+    return None
 
 def check_level_up():
     """see if the player's experience is enough to level-up"""
@@ -950,12 +972,19 @@ def inventory_menu(header):
     if len(inventory) == 0:
         options = ['Inventory is empty.']
     else:
-        options = [item.name for item in inventory]
+        options = []
+        for item in inventory:
+            text = item.name
+            # show additional information, in case it's equipped
+            if item.equipment and item.equipment.is_equipped:
+                text = text + ' (on ' + item.equipment.slot + ')'
+            options.append(text)
 
     index = menu(header, options, INVENTORY_WIDTH)
 
     #if an item was chosen, return it
-    if index is None or len(inventory) == 0: return None
+    if index is None or len(inventory) == 0:
+        return None
     return inventory[index].item
 
 def new_game():
