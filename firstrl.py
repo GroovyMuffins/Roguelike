@@ -552,7 +552,9 @@ def make_map():
     #the list of objects with just the player
     game_objects = [player]
 
-    game_map = [[Tile(True) for y in range(MAP_HEIGHT)] for x in range(MAP_WIDTH)]
+    game_map = [[Tile(True)\
+        for y in range(MAP_HEIGHT)]\
+        for x in range(MAP_WIDTH)]
 
     rooms = []
     num_rooms = 0
@@ -560,6 +562,7 @@ def make_map():
         #random width and height
         width = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
         height = libtcod.random_get_int(0, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
+
         #random position without going out of the boundaries of the map
         x = libtcod.random_get_int(0, 0, MAP_WIDTH - width - 1)
         y = libtcod.random_get_int(0, 0, MAP_HEIGHT - height - 1)
@@ -587,7 +590,6 @@ def make_map():
                 #this is the first room, where the player starts at
                 player.x = new_x
                 player.y = new_y
-
             else:
                 #all rooms after the first:
                 #connect it to the previous room with a tunnel
@@ -599,11 +601,11 @@ def make_map():
                 if libtcod.random_get_int(0, 0, 1) == 1:
                     #first move horizontally, then vertically
                     create_h_tunnel(prev_x, new_x, prev_y)
-                    create_v_tunnel(prev_y, new_y, prev_x)
+                    create_v_tunnel(prev_y, new_y, new_x)
                 else:
                     #first move vertically, then horizontally
                     create_v_tunnel(prev_y, new_y, prev_x)
-                    create_h_tunnel(prev_x, new_x, prev_y)
+                    create_h_tunnel(prev_x, new_x, new_y)
 
             #add some contents to this room, such as monsters
             place_objects(new_room)
