@@ -5,6 +5,19 @@ import textwrap
 import shelve
 import libtcodpy as libtcod
 
+# Font tile ids
+WALL_TILE = 256
+FLOOR_TILE = 257
+PLAYER_TILE = 258
+ORC_TILE = 259
+TROLL_TILE = 260
+SCROLL_TILE = 261
+HEALINGPOTION_TILE = 262
+SWORD_TILE = 263
+SHIELD_TILE = 264
+STAIRSDOWN_TILE = 265
+DAGGER_TILE = 266
+
 #actual size of the window
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
@@ -615,7 +628,7 @@ def make_map():
             num_rooms += 1
 
     #create stairs at the center of the last room
-    stairs = Object(new_x, new_y, '<', 'stairs', libtcod.white, always_visible=True)
+    stairs = Object(new_x, new_y, STAIRSDOWN_TILE, 'stairs', libtcod.white, always_visible=True)
     game_objects.append(stairs)
     stairs.send_to_back() #so it's drawn below the monsters
 
@@ -658,7 +671,7 @@ def place_objects(room):
                     hp=20, defense=0, power=4, xp=35, death_function=monster_death)
                 ai_component = BasicMonster()
 
-                monster = Object(x, y, 'o', 'orc', libtcod.desaturated_green,\
+                monster = Object(x, y, ORC_TILE, 'orc', libtcod.desaturated_green,\
                     blocks=True, fighter=fighter_component, ai=ai_component)
             elif choice == 'troll':
                 #create a troll
@@ -666,7 +679,7 @@ def place_objects(room):
                     hp=30, defense=2, power=8, xp=100, death_function=monster_death)
                 ai_component = BasicMonster()
 
-                monster = Object(x, y, 'T', 'troll', libtcod.darker_green,\
+                monster = Object(x, y, TROLL_TILE, 'troll', libtcod.darker_green,\
                     blocks=True, fighter=fighter_component, ai=ai_component)
 
             game_objects.append(monster)
@@ -683,7 +696,7 @@ def place_objects(room):
                 #create a healing potion (70% chance)
                 item_component = Item(use_function=cast_heal)
 
-                item = Object(x, y, '!', 'healing potion', libtcod.violet,\
+                item = Object(x, y, HEALINGPOTION_TILE, 'healing potion', libtcod.violet,\
                     item=item_component, always_visible=True)
             elif choice == 'lightning':
                 #create a lightning bolt scroll (10% chance)
@@ -705,12 +718,13 @@ def place_objects(room):
                     item=item_component, always_visible=True)
             elif choice == 'sword':
                 # create a sword
-                equipment_component = Equipment(slot='right hand')
-                item = Object(x, y, '/', 'sword', libtcod.sky, equipment=equipment_component)
+                equipment_component = Equipment(slot='right hand', power_bonus=3)
+                item = Object(x, y, SWORD_TILE, 'sword', libtcod.sky, equipment=equipment_component)
             elif choice == 'shield':
                 # create a shield
-                equipment_component = Equipment(slot='left hand')
-                item = Object(x, y, '[', 'shield', libtcod.dark_orange, equipment=equipment_component)
+                equipment_component = Equipment(slot='left hand', defense_bonus=1)
+                item = Object(x, y, SHIELD_TILE, 'shield', libtcod.dark_orange,\
+                    equipment=equipment_component)
 
             game_objects.append(item)
             item.send_to_back() #items appear below other objects
@@ -748,6 +762,8 @@ def from_dungeon_level(table):
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     """render a bar (HP, experience, etc). first calculate the widt o the bar"""
+    load_customfont()
+
     bar_width = int(float(value) / maximum * total_width)
 
     #render the background first
@@ -785,19 +801,17 @@ def render_all():
                 #if it's not visible right now, the player can only see it if it's explored
                 if game_map[x][y].explored:
                     if wall:
-                        libtcod.console_set_char_background( \
-                            CON, x, y, COLOR_DARK_WALL, libtcod.BKGND_SET)
+                        libtcod.console_put_char_ex(\
+                            CON, x, y, WALL_TILE, libtcod.grey, libtcod.black)
                     else:
-                        libtcod.console_set_char_background( \
-                            CON, x, y, COLOR_DARK_GROUND, libtcod.BKGND_SET)
+                        libtcod.console_put_char_ex(\
+                            CON, x, y, FLOOR_TILE, libtcod.grey, libtcod.black)
             else:
                 #it's visible
                 if wall:
-                    libtcod.console_set_char_background( \
-                        CON, x, y, COLOR_LIGHT_WALL, libtcod.BKGND_SET)
+                    libtcod.console_put_char_ex(CON, x, y, WALL_TILE, libtcod.white, libtcod.black)
                 else:
-                    libtcod.console_set_char_background( \
-                        CON, x, y, COLOR_LIGHT_GROUND, libtcod.BKGND_SET)
+                    libtcod.console_put_char_ex(CON, x, y, FLOOR_TILE, libtcod.white, libtcod.black)
                 #since it's visible, explore it
                 game_map[x][y].explored = True
 
@@ -1003,7 +1017,8 @@ def menu(header, options, width):
 
     #convert the ASCII code to an index; if it corresponds to an option, return it
     index = key.c - ord('a')
-    if index >= 0 and index < len(options): return index
+    if index >= 0 and index < len(options):
+        return index
     return None
 
 def inventory_menu(header):
@@ -1032,7 +1047,7 @@ def new_game():
 
     #create object representing the player
     fighter_component = Fighter(hp=100, defense=1, power=2, xp=0, death_function=player_death)
-    player = Object(0, 0, '@', 'player', libtcod.white, blocks=True, fighter=fighter_component)
+    player = Object(0, 0, PLAYER_TILE, 'player', libtcod.white, blocks=True, fighter=fighter_component)
 
     player.level = 1
 
@@ -1052,7 +1067,7 @@ def new_game():
 
     # initial equipment: a dagger
     equipment_component = Equipment(slot='right hand', power_bonus=2)
-    obj = Object(0, 0, '-', 'dagger', libtcod.sky, equipment=equipment_component)
+    obj = Object(0, 0, DAGGER_TILE, 'dagger', libtcod.sky, equipment=equipment_component)
     inventory.append(obj)
     equipment_component.equip()
     obj.always_visible = True
@@ -1172,13 +1187,24 @@ def load_game():
 
     initialize_fov()
 
+def load_customfont():
+    """The index of the first custom tile in the file"""
+    a = 256
+
+    # The "y" is the row index, here we load the sixth row in the font file.
+    # Increase the "6" to load any new rows from the file.
+    for y in range(5, 6):
+        libtcod.console_map_ascii_codes_to_font(a, 32, 0, y)
+        a += 32
 
 #############################################
 # Initialization & Main Loop
 #############################################
 
-libtcod.console_set_custom_font('arial10x10.png', \
-    libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+# The font has 32 chars in a row, and there's a total of 10 rows.
+# Increase the "10" when you add new rows to the sample font file.
+libtcod.console_set_custom_font('TiledFont.png',\
+    libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD, 32, 10)
 libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, 'python/libtcod tutorial', False)
 libtcod.sys_set_fps(LIMIT_FPS)
 CON = libtcod.console_new(MAP_WIDTH, MAP_HEIGHT)
