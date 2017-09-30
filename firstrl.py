@@ -1,4 +1,4 @@
-#!/c/Python27/python
+#! /usr/bin/python2.7
 """This module sets up initial rogue basin game."""
 import math
 import textwrap
