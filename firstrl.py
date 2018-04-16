@@ -3,8 +3,8 @@
 import math
 import textwrap
 import shelve
+import support.variables as var
 import libtcodpy as libtcod
-import variables as var
 
 
 class Tile:

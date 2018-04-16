@@ -1,7 +1,4 @@
 # Global variables
-import math
-import textwrap
-import shelve
 import libtcodpy as libtcod
 
 # Font tile ids
@@ -65,3 +62,17 @@ COLOR_DARK_WALL = libtcod.Color(0, 0, 100)
 COLOR_LIGHT_WALL = libtcod.Color(130, 110, 50)
 COLOR_DARK_GROUND = libtcod.Color(50, 50, 150)
 COLOR_LIGHT_GROUND = libtcod.Color(200, 180, 50)
+
+game_map = None
+game_objects = None
+player = None
+stairs = None
+inventory = []
+game_msgs = []
+game_state = None
+dungeon_level = None
+
+fov_map = None
+fov_recompute = True
+
+CON = None
