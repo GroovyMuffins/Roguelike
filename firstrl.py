@@ -6,80 +6,9 @@ from classes.Tile import Tile
 import libtcodpy as libtcod
 import math
 import shelve
+from support.common import is_blocked, message
 import support.variables as var
-from support.common import is_blocked
 import textwrap
-
-class Fighter:
-    """combat-related properties and methods (monster, player, NPC)"""
-    def __init__(self, hp, defense, power, xp, death_function=None):
-        self.base_max_hp = hp
-        self.hp = hp
-        self.base_defense = defense
-        self.base_power = power
-        self.xp = xp
-        self.death_function = death_function
-
-    @property
-    def power(self):
-        """Return actual power, by summing up the bonuses from all equipped items"""
-        bonus = sum(equipment.power_bonus for equipment in get_all_equipped(self.owner))
-        return self.base_power + bonus
-
-    @property
-    def defense(self):
-        """Return actual defense, by summing up the bonuses from all equipped items"""
-        bonus = sum(equipment.defense_bonus for equipment in get_all_equipped(self.owner))
-        return self.base_defense + bonus
-
-    @property
-    def max_hp(self):
-        """Return actual max_hp, by summing up the bonuses from all equipped items"""
-        bonus = sum(equipment.max_hp_bonus for equipment in get_all_equipped(self.owner))
-        return self.base_max_hp + bonus
-
-    def attack(self, target):
-        """a simple formula for attack damage"""
-        damage = self.power - target.fighter.defense
-
-        if damage > 0:
-            #make the target take some damage
-            message(self.owner.name.capitalize() + ' attacks ' + target.name\
-                + ' for ' + str(damage) + ' hit points.')
-            target.fighter.take_damage(damage)
-        else:
-            message(self.owner.name.capitalize() + ' attacks ' + target.name\
-                + ' but it has no effect!')
-
-    def take_damage(self, damage):
-        """apply damage if possible"""
-        if damage > 0:
-            self.hp -= damage
-
-            #check for death. if there's a death function, call it
-            if self.hp <= 0:
-                function = self.death_function
-                if function is not None:
-                    function(self.owner)
-                if self.owner != var.player: # yield experience to the player
-                    var.player.fighter.xp += self.xp
-
-    def heal(self, amount):
-        """heal by the given amount, without going over the maximum"""
-        self.hp += amount
-        if self.hp > self.max_hp:
-            self.hp = self.max_hp
-
-def get_all_equipped(obj):
-    """Returns a list of equipped items"""
-    if obj == var.player:
-        equipped_list = []
-        for item in var.inventory:
-            if item.equipment and item.equipment.is_equipped:
-                equipped_list.append(item.equipment)
-        return equipped_list
-    else:
-        return [] # other objects have no equipment
 
 class BasicMonster:
     """AI for a basic monster."""
@@ -675,18 +604,6 @@ def player_move_or_attack(dx, dy):
     else:
         var.player.move(dx, dy)
         var.fov_recompute = True
-
-def message(new_msg, color=libtcod.white):
-    """split the message if necessary, among multiple lines"""
-    new_msg_lines = textwrap.wrap(new_msg, var.MSG_WIDTH)
-
-    for line in new_msg_lines:
-        #if the buffer is full, remove the first line to make room for the new one
-        if len(var.game_msgs) == var.MSG_HEIGHT:
-            del var.game_msgs[0]
-
-        # add the new line as a tuple, with the tex and the color
-        var.game_msgs.append((line, color))
 
 def handle_keys():
     """Handle keyboard movement."""
