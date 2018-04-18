@@ -3,6 +3,13 @@ import libtcodpy as libtcod
 import support.variables as var
 import textwrap
 
+def get_equipped_in_slot(slot):
+    """Returns the equipment in a slot, or None if it's empty"""
+    for obj in var.inventory:
+        if obj.equipment and obj.equipment.slot == slot and obj.equipment.is_equipped:
+            return obj.equipment
+    return None
+
 def message(new_msg, color=libtcod.white):
     """split the message if necessary, among multiple lines"""
     new_msg_lines = textwrap.wrap(new_msg, var.MSG_WIDTH)

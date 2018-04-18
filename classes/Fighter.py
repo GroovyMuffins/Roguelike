@@ -1,6 +1,6 @@
 """Fighter class"""
-import support.variables as var
 from support.common import message, get_all_equipped
+import support.variables as var
 
 class Fighter:
     """combat-related properties and methods (monster, player, NPC)"""

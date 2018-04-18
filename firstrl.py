@@ -1,138 +1,17 @@
 #! /usr/bin/python2.7
 """This module sets up initial rogue basin game."""
+from classes.BasicMonster import BasicMonster
+from classes.ConfusedMonster import ConfusedMonster
+from classes.Equipment import Equipment
+from classes.Fighter import Fighter
+from classes.Item import Item
 from classes.Object import Object
 from classes.Rect import Rect
 from classes.Tile import Tile
 import libtcodpy as libtcod
-import math
 import shelve
 from support.common import is_blocked, message
 import support.variables as var
-import textwrap
-
-class BasicMonster:
-    """AI for a basic monster."""
-    def take_turn(self):
-        """a basic monster takes its turn. If you can see it, it can see you"""
-        monster = self.owner
-        if libtcod.map_is_in_fov(var.fov_map, monster.x, monster.y):
-
-            #move towards player if far away
-            if monster.distance_to(var.player) >= 2:
-                monster.move_towards(var.player.x, var.player.y)
-
-            #close enough, attack! (if the player is still alive.)
-            elif var.player.fighter.hp > 0:
-                monster.fighter.attack(var.player)
-
-class Item:
-    """Class containing item objects"""
-    def __init__(self, use_function=None):
-        self.use_function = use_function
-
-    def use(self):
-        """just call the "use_function" if it is defined"""
-        # special case: if the object has the Equipment component,
-        # the "use" action is to equip/dequip
-        if self.owner.equipment:
-            self.owner.equipment.toggle_equip()
-            return
-
-        if self.use_function is None:
-            message('The '+ self.owner.name + ' cannot be used.')
-        else:
-            if self.use_function() != 'cancelled':
-                #destroy after use, unless it was cancelled for some reason
-                var.inventory.remove(self.owner)
-
-    #an item that can be picked up and used.
-    def pick_up(self):
-        """add to the player's inventory and remove from the map"""
-        if len(var.inventory) >= 26:
-            message('Your inventory is full, cannot pick up ' + self.owner.name + '.', libtcod.red)
-        else:
-            var.inventory.append(self.owner)
-            var.game_objects.remove(self.owner)
-            message('You picked up a ' + self.owner.name + '!', libtcod.green)
-
-        # special case: automatically equip, if the corresponding equipment slot is unused
-        equipment = self.owner.equipment
-        if equipment and get_equipped_in_slot(equipment.slot) is None:
-            equipment.equip()
-
-    def drop(self):
-        """add to the map and remove from the player's inventory.
-        also, place it at the player's coordinates"""
-        var.game_objects.append(self.owner)
-        var.inventory.remove(self.owner)
-        self.owner.x = var.player.x
-        self.owner.y = var.player.y
-        message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
-
-        # special case: if the object has the Equipment component, dequip it before dropping
-        if self.owner.equipment:
-            self.owner.equipment.dequip()
-
-class ConfusedMonster:
-    """AI for a temporarily confused monster (reerts to previous AI after a while)."""
-    def __init__(self, old_ai, num_turns=var.CONFUSE_NUM_TURNS):
-        self.old_ai = old_ai
-        self.num_turns = num_turns
-
-    def take_turn(self):
-        """AI for a confused monster."""
-        if self.num_turns > 0: #still confused...
-            #move in a random direction, and decrease the number of turns confused
-            self.owner.move(libtcod.random_get_int(0, -1, 1), libtcod.random_get_int(0, -1, 1))
-            self.num_turns -= 1
-        #restore the previous AI (this one will be deleted because it's not referenced anymore)
-        else:
-            self.owner.ai = self.old_ai
-            message('The ' + self.owner.name + ' i no longer confused!', libtcod.red)
-
-class Equipment:
-    """An object that can be equipped, yielding bonuses.
-    Automatically adds the Item component."""
-    def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
-        self.slot = slot
-        self.is_equipped = False
-        self.power_bonus = power_bonus
-        self.defense_bonus = defense_bonus
-        self.max_hp_bonus = max_hp_bonus
-
-    def toggle_equip(self):
-        """Toggle equip/dequip status"""
-        if self.is_equipped:
-            self.dequip()
-        else:
-            self.equip()
-
-    def equip(self):
-        """Equip equipment"""
-        # if the slot is already being used, dequip whatever is there first
-        old_equipment = get_equipped_in_slot(self.slot)
-        if old_equipment is not None:
-            old_equipment.dequip()
-
-        # equip object and show a message about it
-        self.is_equipped = True
-        message('Equipped ' + self.owner.name + ' on ' + self.slot + '.',\
-            libtcod.light_green)
-
-    def dequip(self):
-        """Dequip object and show a mesage about it"""
-        if not self.is_equipped:
-            return
-        self.is_equipped = False
-        message('Dequipped ' + self.owner.name + ' from ' + self.slot + '.',\
-            libtcod.light_yellow)
-
-def get_equipped_in_slot(slot):
-    """Returns the equipment in a slot, or None if it's empty"""
-    for obj in var.inventory:
-        if obj.equipment and obj.equipment.slot == slot and obj.equipment.is_equipped:
-            return obj.equipment
-    return None
 
 def check_level_up():
     """see if the player's experience is enough to level-up"""
