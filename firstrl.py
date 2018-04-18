@@ -112,12 +112,12 @@ class Object:
         #or it's set to "always visible" and on an explored tile
         if libtcod.map_is_in_fov(var.fov_map, self.x, self.y) or\
             (self.always_visible and var.game_map[self.x][self.y].explored):
-            libtcod.console_set_default_foreground(CON, self.color)
-            libtcod.console_put_char(CON, self.x, self.y, self.char, libtcod.BKGND_NONE)
+            libtcod.console_set_default_foreground(var.CON, self.color)
+            libtcod.console_put_char(var.CON, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
     def clear(self):
         """erase the character that represents this object"""
-        libtcod.console_put_char(CON, self.x, self.y, ' ', libtcod.BKGND_NONE)
+        libtcod.console_put_char(var.CON, self.x, self.y, ' ', libtcod.BKGND_NONE)
 
 class Fighter:
     """combat-related properties and methods (monster, player, NPC)"""
@@ -560,9 +560,9 @@ def make_map():
             num_rooms += 1
 
     #create stairs at the center of the last room
-    stairs = Object(new_x, new_y, var.STAIRSDOWN_TILE, 'stairs', libtcod.white, always_visible=True)
-    var.game_objects.append(stairs)
-    stairs.send_to_back() #so it's drawn below the monsters
+    var.stairs = Object(new_x, new_y, var.STAIRSDOWN_TILE, 'stairs', libtcod.white, always_visible=True)
+    var.game_objects.append(var.stairs)
+    var.stairs.send_to_back() #so it's drawn below the monsters
 
 def place_objects(room):
     """choose random number of monsters"""
@@ -730,16 +730,16 @@ def render_all():
                 if var.game_map[x][y].explored:
                     if wall:
                         libtcod.console_put_char_ex(\
-                            CON, x, y, var.WALL_TILE, libtcod.grey, libtcod.black)
+                            var.CON, x, y, var.WALL_TILE, libtcod.grey, libtcod.black)
                     else:
                         libtcod.console_put_char_ex(\
-                            CON, x, y, var.FLOOR_TILE, libtcod.grey, libtcod.black)
+                            var.CON, x, y, var.FLOOR_TILE, libtcod.grey, libtcod.black)
             else:
                 #it's visible
                 if wall:
-                    libtcod.console_put_char_ex(CON, x, y, var.WALL_TILE, libtcod.white, libtcod.black)
+                    libtcod.console_put_char_ex(var.CON, x, y, var.WALL_TILE, libtcod.white, libtcod.black)
                 else:
-                    libtcod.console_put_char_ex(CON, x, y, var.FLOOR_TILE, libtcod.white, libtcod.black)
+                    libtcod.console_put_char_ex(var.CON, x, y, var.FLOOR_TILE, libtcod.white, libtcod.black)
                 #since it's visible, explore it
                 var.game_map[x][y].explored = True
 
@@ -751,7 +751,7 @@ def render_all():
     var.player.draw()
 
     #blit the contents of "con" to the root console
-    libtcod.console_blit(CON, 0, 0, var.SCREEN_WIDTH, var.SCREEN_HEIGHT, 0, 0, 0)
+    libtcod.console_blit(var.CON, 0, 0, var.SCREEN_WIDTH, var.SCREEN_HEIGHT, 0, 0, 0)
 
     #prepare to render the GUI panel
     libtcod.console_set_default_background(panel, libtcod.black)
@@ -907,7 +907,7 @@ def menu(header, options, width):
     if len(options) > 26: raise ValueError('Cannot have a menu with more than 26 options.')
 
     #calculate total height for the header (after auto-wrap) and one line per option
-    header_height = libtcod.console_get_height_rect(CON, 0, 0, width, var.SCREEN_HEIGHT, header)
+    header_height = libtcod.console_get_height_rect(var.CON, 0, 0, width, var.SCREEN_HEIGHT, header)
     if header == '':
         header_height = 0
     height = len(options) + header_height
@@ -1004,7 +1004,7 @@ def initialize_fov():
             libtcod.map_set_properties(\
                 var.fov_map, x, y, not var.game_map[x][y].block_sight, not var.game_map[x][y].blocked)
 
-    libtcod.console_clear(CON) #unexplored areas start black (which is the default background color)
+    libtcod.console_clear(var.CON) #unexplored areas start black (which is the default background color)
 
 
 def play_game():
@@ -1125,7 +1125,7 @@ libtcod.console_set_custom_font('TiledFont.png',\
     libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD, 32, 10)
 libtcod.console_init_root(var.SCREEN_WIDTH, var.SCREEN_HEIGHT, 'python/libtcod tutorial', False)
 libtcod.sys_set_fps(var.LIMIT_FPS)
-CON = libtcod.console_new(var.MAP_WIDTH, var.MAP_HEIGHT)
+var.CON = libtcod.console_new(var.MAP_WIDTH, var.MAP_HEIGHT)
 panel = libtcod.console_new(var.SCREEN_WIDTH, var.PANEL_HEIGHT)
 
 main_menu()
