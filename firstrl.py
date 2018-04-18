@@ -103,16 +103,15 @@ class Object:
     def send_to_back(self):
         """make this object be drawn first,
         so all others appear above it if they're in the same tile."""
-        global game_objects
-        game_objects.remove(self)
-        game_objects.insert(0, self)
+        var.game_objects.remove(self)
+        var.game_objects.insert(0, self)
 
     def draw(self):
         """set the color and then draw the character that represents this object at its position"""
         #only show if it's visible to the player;
         #or it's set to "always visible" and on an explored tile
-        if libtcod.map_is_in_fov(fov_map, self.x, self.y) or\
-            (self.always_visible and game_map[self.x][self.y].explored):
+        if libtcod.map_is_in_fov(var.fov_map, self.x, self.y) or\
+            (self.always_visible and var.game_map[self.x][self.y].explored):
             libtcod.console_set_default_foreground(CON, self.color)
             libtcod.console_put_char(CON, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
@@ -171,8 +170,8 @@ class Fighter:
                 function = self.death_function
                 if function is not None:
                     function(self.owner)
-                if self.owner != player: # yield experience to the player
-                    player.fighter.xp += self.xp
+                if self.owner != var.player: # yield experience to the player
+                    var.player.fighter.xp += self.xp
 
     def heal(self, amount):
         """heal by the given amount, without going over the maximum"""
@@ -182,9 +181,9 @@ class Fighter:
 
 def get_all_equipped(obj):
     """Returns a list of equipped items"""
-    if obj == player:
+    if obj == var.player:
         equipped_list = []
-        for item in inventory:
+        for item in var.inventory:
             if item.equipment and item.equipment.is_equipped:
                 equipped_list.append(item.equipment)
         return equipped_list
@@ -196,15 +195,15 @@ class BasicMonster:
     def take_turn(self):
         """a basic monster takes its turn. If you can see it, it can see you"""
         monster = self.owner
-        if libtcod.map_is_in_fov(fov_map, monster.x, monster.y):
+        if libtcod.map_is_in_fov(var.fov_map, monster.x, monster.y):
 
             #move towards player if far away
-            if monster.distance_to(player) >= 2:
-                monster.move_towards(player.x, player.y)
+            if monster.distance_to(var.player) >= 2:
+                monster.move_towards(var.player.x, var.player.y)
 
             #close enough, attack! (if the player is still alive.)
-            elif player.fighter.hp > 0:
-                monster.fighter.attack(player)
+            elif var.player.fighter.hp > 0:
+                monster.fighter.attack(var.player)
 
 class Item:
     """Class containing item objects"""
@@ -224,16 +223,16 @@ class Item:
         else:
             if self.use_function() != 'cancelled':
                 #destroy after use, unless it was cancelled for some reason
-                inventory.remove(self.owner)
+                var.inventory.remove(self.owner)
 
     #an item that can be picked up and used.
     def pick_up(self):
         """add to the player's inventory and remove from the map"""
-        if len(inventory) >= 26:
+        if len(var.inventory) >= 26:
             message('Your inventory is full, cannot pick up ' + self.owner.name + '.', libtcod.red)
         else:
-            inventory.append(self.owner)
-            game_objects.remove(self.owner)
+            var.inventory.append(self.owner)
+            var.game_objects.remove(self.owner)
             message('You picked up a ' + self.owner.name + '!', libtcod.green)
 
         # special case: automatically equip, if the corresponding equipment slot is unused
@@ -244,10 +243,10 @@ class Item:
     def drop(self):
         """add to the map and remove from the player's inventory.
         also, place it at the player's coordinates"""
-        game_objects.append(self.owner)
-        inventory.remove(self.owner)
-        self.owner.x = player.x
-        self.owner.y = player.y
+        var.game_objects.append(self.owner)
+        var.inventory.remove(self.owner)
+        self.owner.x = var.player.x
+        self.owner.y = var.player.y
         message('You dropped a ' + self.owner.name + '.', libtcod.yellow)
 
         # special case: if the object has the Equipment component, dequip it before dropping
@@ -310,7 +309,7 @@ class Equipment:
 
 def get_equipped_in_slot(slot):
     """Returns the equipment in a slot, or None if it's empty"""
-    for obj in inventory:
+    for obj in var.inventory:
         if obj.equipment and obj.equipment.slot == slot and obj.equipment.is_equipped:
             return obj.equipment
     return None
@@ -462,11 +461,11 @@ def monster_death(monster):
 
 def is_blocked(x, y):
     """first test the map tile"""
-    if game_map[x][y].blocked:
+    if var.game_map[x][y].blocked:
         return True
 
     #now check for any blocking objects
-    for g_object in game_objects:
+    for g_object in var.game_objects:
         if g_object.blocks and g_object.x == x and g_object.y == y:
             return True
 
