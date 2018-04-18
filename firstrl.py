@@ -5,20 +5,7 @@ import textwrap
 import shelve
 import support.variables as var
 import libtcodpy as libtcod
-
-
-class Tile:
-    """A tile of the map and its properties"""
-    def __init__(self, blocked, block_sight=None):
-        self.blocked = blocked
-
-        #all tiles start unexplored
-        self.explored = False
-
-        #by default, if a tile is blocked, it also blocks sight
-        if block_sight is None:
-            block_sight = blocked
-        self.block_sight = block_sight
+from classes.Tile import Tile
 
 class Rect:
     """a rectangle on the map. used to characterize a room."""
