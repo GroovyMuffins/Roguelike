@@ -386,17 +386,17 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     bar_width = int(float(value) / maximum * total_width)
 
     #render the background first
-    libtcod.console_set_default_background(panel, back_color)
-    libtcod.console_rect(panel, x, y, total_width, 1, False, libtcod.BKGND_SCREEN)
+    libtcod.console_set_default_background(var.panel, back_color)
+    libtcod.console_rect(var.panel, x, y, total_width, 1, False, libtcod.BKGND_SCREEN)
 
     #now render the bar on top
-    libtcod.console_set_default_background(panel, bar_color)
+    libtcod.console_set_default_background(var.panel, bar_color)
     if bar_width > 0:
-        libtcod.console_rect(panel, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
+        libtcod.console_rect(var.panel, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
 
     #finally, some centered text with the values
-    libtcod.console_set_default_foreground(panel, libtcod.white)
-    libtcod.console_print_ex(panel, x + total_width / 2, y, libtcod.BKGND_NONE, libtcod.CENTER,\
+    libtcod.console_set_default_foreground(var.panel, libtcod.white)
+    libtcod.console_print_ex(var.panel, x + total_width / 2, y, libtcod.BKGND_NONE, libtcod.CENTER,\
         name + ': ' + str(value) + '/' + str(maximum))
 
 def render_all():
@@ -441,14 +441,14 @@ def render_all():
     libtcod.console_blit(var.CON, 0, 0, var.SCREEN_WIDTH, var.SCREEN_HEIGHT, 0, 0, 0)
 
     #prepare to render the GUI panel
-    libtcod.console_set_default_background(panel, libtcod.black)
-    libtcod.console_clear(panel)
+    libtcod.console_set_default_background(var.panel, libtcod.black)
+    libtcod.console_clear(var.panel)
 
     #print the game messages, one line at a time
     y = 1
     for (line, color) in var.game_msgs:
-        libtcod.console_set_default_foreground(panel, color)
-        libtcod.console_print_ex(panel, var.MSG_X, y, libtcod.BKGND_NONE, libtcod.LEFT, line)
+        libtcod.console_set_default_foreground(var.panel, color)
+        libtcod.console_print_ex(var.panel, var.MSG_X, y, libtcod.BKGND_NONE, libtcod.LEFT, line)
         y += 1
 
     #show the player's stats
@@ -456,14 +456,14 @@ def render_all():
         libtcod.light_red, libtcod.darker_red)
 
     libtcod.console_print_ex(\
-        panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT, 'Dungeon level ' + str(var.dungeon_level))
+        var.panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT, 'Dungeon level ' + str(var.dungeon_level))
 
     #display names of objects under the mouse
-    libtcod.console_set_default_foreground(panel, libtcod.light_gray)
-    libtcod.console_print_ex(panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, get_names_under_mouse())
+    libtcod.console_set_default_foreground(var.panel, libtcod.light_gray)
+    libtcod.console_print_ex(var.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, get_names_under_mouse())
 
     #blit the contents of "panel" to the root console
-    libtcod.console_blit(panel, 0, 0, var.SCREEN_WIDTH, var.PANEL_HEIGHT, 0, 0, var.PANEL_Y)
+    libtcod.console_blit(var.panel, 0, 0, var.SCREEN_WIDTH, var.PANEL_HEIGHT, 0, 0, var.PANEL_Y)
 
 def player_move_or_attack(dx, dy):
     #the coordinates the payer is moving to/attacking
@@ -801,6 +801,6 @@ libtcod.console_set_custom_font('TiledFont.png',\
 libtcod.console_init_root(var.SCREEN_WIDTH, var.SCREEN_HEIGHT, 'python/libtcod tutorial', False)
 libtcod.sys_set_fps(var.LIMIT_FPS)
 var.CON = libtcod.console_new(var.MAP_WIDTH, var.MAP_HEIGHT)
-panel = libtcod.console_new(var.SCREEN_WIDTH, var.PANEL_HEIGHT)
+var.panel = libtcod.console_new(var.SCREEN_WIDTH, var.PANEL_HEIGHT)
 
 main_menu()
