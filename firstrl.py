@@ -166,14 +166,14 @@ def create_room(room):
             var.game_map[x][y].blocked = False
             var.game_map[x][y].block_sight = False
 
-def create_h_tunnel(x1, x2, y):
+def create_h_tunnel(x1: int, x2: int, y: int):
     """create horizontal tunnel"""
     #min() and max() are used in case x1>x2
     for x in range(min(x1, x2), max(x1, x2) + 1):
         var.game_map[x][y].blocked = False
         var.game_map[x][y].block_sight = False
 
-def create_v_tunnel(y1, y2, x):
+def create_v_tunnel(y1: int, y2: int, x: int):
     """create vertical tunnel"""
     for y in range(min(y1, y2), max(y1, y2) + 1):
         var.game_map[x][y].blocked = False
@@ -217,6 +217,8 @@ def make_map():
 
             #center coordinates of new room, will be useful later
             (new_x, new_y) = new_room.center()
+            new_x = int(new_x)
+            new_y = int(new_y)
 
             if num_rooms == 0:
                 #this is the first room, where the player starts at
@@ -228,6 +230,8 @@ def make_map():
 
                 #center coordinates of the previous room
                 (prev_x, prev_y) = rooms[num_rooms - 1].center()
+                prev_x = int(prev_x)
+                prev_y = int(prev_y)
 
                 #draw a coin (random number that is either 0 or 1)
                 if libtcod.random_get_int(0, 0, 1) == 1:
@@ -367,8 +371,8 @@ def random_choice_index(chances):
 
 def random_choice(chances_dict):
     """Choose one option from dictionary of chances, returning its key"""
-    chances = chances_dict.values()
-    strings = chances_dict.keys()
+    chances = list(chances_dict.values())
+    strings = list(chances_dict.keys())
     return strings[random_choice_index(chances)]
 
 def from_dungeon_level(table):
@@ -396,7 +400,7 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
     #finally, some centered text with the values
     libtcod.console_set_default_foreground(var.panel, libtcod.white)
-    libtcod.console_print_ex(var.panel, x + total_width / 2, y, libtcod.BKGND_NONE, libtcod.CENTER,\
+    libtcod.console_print_ex(var.panel, int(x + total_width / 2), y, libtcod.BKGND_NONE, libtcod.CENTER,\
         name + ': ' + str(value) + '/' + str(maximum))
 
 def render_all():
@@ -448,7 +452,7 @@ def render_all():
     y = 1
     for (line, color) in var.game_msgs:
         libtcod.console_set_default_foreground(var.panel, color)
-        libtcod.console_print_ex(var.panel, var.MSG_X, y, libtcod.BKGND_NONE, libtcod.LEFT, line)
+        libtcod.console_print_ex(var.panel, int(var.MSG_X), y, libtcod.BKGND_NONE, libtcod.LEFT, line)
         y += 1
 
     #show the player's stats
@@ -607,7 +611,7 @@ def menu(header, options, width):
     #blit the contents of "window" to the root console
     x = var.SCREEN_WIDTH/2 - width/2
     y = var.SCREEN_HEIGHT/2 - height/2
-    libtcod.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
+    libtcod.console_blit(window, 0, 0, width, height, 0, int(x), int(y), 1.0, 0.7)
 
     #present the root console to the player and wait for a key-press
     libtcod.console_flush()
@@ -726,10 +730,10 @@ def main_menu():
         #show the game's title, and some credits!
         libtcod.console_set_default_foreground(0, libtcod.yellow)
         libtcod.console_print_ex(\
-            0, var.SCREEN_WIDTH/2, var.SCREEN_HEIGHT/2-4, libtcod.BKGND_NONE, libtcod.CENTER,
+            0, int(var.SCREEN_WIDTH/2), int(var.SCREEN_HEIGHT/2-4), libtcod.BKGND_NONE, libtcod.CENTER,
             'TOMBS OF THE ANCIENT KINGS')
         libtcod.console_print_ex(\
-            0, var.SCREEN_WIDTH/2, var.SCREEN_HEIGHT-2, libtcod.BKGND_NONE, libtcod.CENTER,
+            0, int(var.SCREEN_WIDTH/2), int(var.SCREEN_HEIGHT-2), libtcod.BKGND_NONE, libtcod.CENTER,
             'By Alf')
 
         #show options and wait for the player's choice
