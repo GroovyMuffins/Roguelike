@@ -266,6 +266,9 @@ def place_objects(room):
     monster_chances = {}
     monster_chances['orc'] = 80 # orc always shows up, even if all other monsters have 0 chance
     monster_chances['troll'] = from_dungeon_level([[15, 3], [30, 5], [60, 7]])
+    monster_chances['feral orc'] = from_dungeon_level([[15, 8], [30, 10], [60, 12]])
+    monster_chances['feral troll'] = from_dungeon_level([[15, 10], [30, 12], [60, 14]])
+    monster_chances['dragon'] = from_dungeon_level([[15, 12], [20, 15]])
 
     # maximum number of items per room
     max_items = from_dungeon_level([[1, 1], [2, 4]])
@@ -303,6 +306,30 @@ def place_objects(room):
                 ai_component = BasicMonster()
 
                 monster = Object(x, y, var.TROLL_TILE, 'troll', libtcod.darker_green,\
+                    blocks=True, fighter=fighter_component, ai=ai_component)
+            elif choice == 'feral orc':
+                #create a feral orc
+                fighter_component = Fighter(\
+                    hp=25, defense=1, power=6, xp=65, death_function=monster_death)
+                ai_component = BasicMonster()
+
+                monster = Object(x, y, var.ORC_TILE, 'feral orc', libtcod.crimson,\
+                    blocks=True, fighter=fighter_component, ai=ai_component)
+            elif choice == 'feral troll':
+                #create a feral troll
+                fighter_component = Fighter(\
+                    hp=40, defense=3, power=10, xp=150, death_function=monster_death)
+                ai_component = BasicMonster()
+
+                monster = Object(x, y, var.TROLL_TILE, 'feral troll', libtcod.crimson,\
+                    blocks=True, fighter=fighter_component, ai=ai_component)
+            elif choice == 'dragon':
+                #create a dragon
+                fighter_component = Fighter(\
+                    hp=100, defense=4, power=15, xp=500, death_function=monster_death)
+                ai_component = BasicMonster()
+
+                monster = Object(x, y, '$', 'dragon', libtcod.dark_red,\
                     blocks=True, fighter=fighter_component, ai=ai_component)
 
             var.game_objects.append(monster)
