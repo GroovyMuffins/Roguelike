@@ -32,7 +32,7 @@ def check_level_up():
                 var.LEVEL_SCREEN_WIDTH)
 
         if choice == 0:
-            var.player.fighter.max_hp += 20
+            var.player.fighter.base_max_hp += 20
             var.player.fighter.hp += 20
         elif choice == 1:
             var.player.fighter.base_power += 1
