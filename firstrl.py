@@ -491,8 +491,6 @@ def player_move_or_attack(dx, dy):
 def handle_keys():
     """Handle keyboard movement."""
     global key
-    # key = libtcod.console_check_for_keypress() #real-time
-    # key = libtcod.console_wait_for_keypress(True) #turn-based
 
     if key.vk == libtcod.KEY_ENTER and key.lalt:
         #Alt+Enter: toggle fullscreen
@@ -536,7 +534,7 @@ def handle_keys():
             if key_char == 'd':
                 #show the inventory; if an item is selected, drop it
                 chosen_item = inventory_menu(\
-                    'Press the key next to an item to dorp it, or any other to cancel.\n')
+                    'Press the key next to an item to drop it, or any other to cancel.\n')
                 if chosen_item is not None:
                     chosen_item.drop()
 
