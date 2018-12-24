@@ -281,7 +281,9 @@ def place_objects(room):
     item_chances['fireball'] = from_dungeon_level([[25, 6]])
     item_chances['confuse'] = from_dungeon_level([[10, 2]])
     item_chances['sword'] = from_dungeon_level([[5, 4]])
+    item_chances['sword of awesomeness'] = from_dungeon_level([[5, 10]])
     item_chances['shield'] = from_dungeon_level([[15, 8]])
+    item_chances['shield of awesomeness'] = from_dungeon_level([[5, 10]])
 
     for _ in range(num_monsters):
         #choose random spot for this monster
@@ -374,6 +376,15 @@ def place_objects(room):
                 # create a shield
                 equipment_component = Equipment(slot='left hand', defense_bonus=1)
                 item = Object(x, y, var.SHIELD_TILE, 'shield', libtcod.dark_orange,\
+                    equipment=equipment_component)
+            elif choice == 'sword of awesomeness':
+                # create a sword of awesomeness
+                equipment_component = Equipment(slot='right hand', power_bonus=10)
+                item = Object(x, y, var.SWORD_TILE, 'sword of awesomeness', libtcod.dark_sky, equipment=equipment_component)
+            elif choice == 'shield of awesomeness':
+                # create a shield of awesomeness
+                equipment_component = Equipment(slot='left hand', defense_bonus=5)
+                item = Object(x, y, var.SHIELD_TILE, 'shield of awesomeness', libtcod.dark_amber,\
                     equipment=equipment_component)
 
             var.game_objects.append(item)
