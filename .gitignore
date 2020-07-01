@@ -1,0 +1,10 @@
+# Project ignore files
+.vscode
+
+# Savegame files
+*.bak
+*.dat
+*.dir
+
+# Generated files
+*.pyc
