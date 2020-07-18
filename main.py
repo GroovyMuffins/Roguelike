@@ -720,6 +720,7 @@ def initialize_fov():
                 var.fov_map, x, y, not var.game_map[x][y].block_sight, not var.game_map[x][y].blocked)
 
     libtcod.console_clear(var.CON) #unexplored areas start black (which is the default background color)
+    var.fov_recompute = True
 
 
 def play_game():
