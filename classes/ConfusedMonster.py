@@ -18,4 +18,4 @@ class ConfusedMonster:
         #restore the previous AI (this one will be deleted because it's not referenced anymore)
         else:
             self.owner.ai = self.old_ai
-            message('The ' + self.owner.name + ' i no longer confused!', libtcod.red)
+            message('The ' + self.owner.name + ' is no longer confused!', libtcod.red)
