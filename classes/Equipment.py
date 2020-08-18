@@ -1,16 +1,18 @@
 """Equipment class"""
+from dataclasses import dataclass
 import libtcodpy as libtcod
 from support.common import get_equipped_in_slot, message
+from typing import Any
 
+@dataclass
 class Equipment:
     """An object that can be equipped, yielding bonuses.
     Automatically adds the Item component."""
-    def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
-        self.slot = slot
-        self.is_equipped = False
-        self.power_bonus = power_bonus
-        self.defense_bonus = defense_bonus
-        self.max_hp_bonus = max_hp_bonus
+    slot: Any = None
+    is_equipped: bool = False
+    power_bonus: int = 0
+    defense_bonus: int = 0
+    max_hp_bonus: int = 0
 
     def toggle_equip(self):
         """Toggle equip/dequip status"""
