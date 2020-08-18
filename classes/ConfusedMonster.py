@@ -1,13 +1,15 @@
 """Confused monster class"""
 import libtcodpy as libtcod
+from dataclasses import dataclass
 import support.variables as var
 from support.common import message
+from typing import Any
 
+@dataclass
 class ConfusedMonster:
-    """AI for a temporarily confused monster (reerts to previous AI after a while)."""
-    def __init__(self, old_ai, num_turns=var.CONFUSE_NUM_TURNS):
-        self.old_ai = old_ai
-        self.num_turns = num_turns
+    """AI for a temporarily confused monster (reverts to previous AI after a while)."""
+    old_ai: Any
+    num_turns: int = var.CONFUSE_NUM_TURNS
 
     def take_turn(self):
         """AI for a confused monster."""
