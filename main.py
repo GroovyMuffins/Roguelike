@@ -1,4 +1,3 @@
-#! /usr/bin/python2.7
 """This module sets up initial rogue basin game."""
 from classes.BasicMonster import BasicMonster
 from classes.ConfusedMonster import ConfusedMonster
@@ -839,7 +838,7 @@ def load_customfont():
 # Increase the "10" when you add new rows to the sample font file.
 libtcod.console_set_custom_font('TiledFont.png',\
     libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD, 32, 10)
-libtcod.console_init_root(var.SCREEN_WIDTH, var.SCREEN_HEIGHT, 'python/libtcod tutorial', False)
+libtcod.console_init_root(var.SCREEN_WIDTH, var.SCREEN_HEIGHT, 'python/roguebasin_tombs', False)
 libtcod.sys_set_fps(var.LIMIT_FPS)
 var.CON = libtcod.console_new(var.MAP_WIDTH, var.MAP_HEIGHT)
 var.panel = libtcod.console_new(var.SCREEN_WIDTH, var.PANEL_HEIGHT)
