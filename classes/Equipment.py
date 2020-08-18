@@ -1,6 +1,6 @@
 """Equipment class"""
 from dataclasses import dataclass
-import libtcodpy as libtcod
+import tcod as libtcod
 from support.common import get_equipped_in_slot, message
 from typing import Any
 

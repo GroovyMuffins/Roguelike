@@ -1,5 +1,5 @@
 # Global variables
-import libtcodpy as libtcod
+import tcod as libtcod
 
 # Font tile ids
 WALL_TILE = 256

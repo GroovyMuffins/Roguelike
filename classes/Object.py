@@ -1,12 +1,12 @@
 """Object class"""
-import libtcodpy as libtcod
+import tcod as libtcod
 import math
 import support.variables as var
 from classes.Item import Item
 from support.common import is_blocked
 
 class Object:
-    """This is generic object: the player, a monster, an tiem, the stairs...
+    """This is generic object: the player, a monster, an item, the stairs...
     it's always represented by a character on screen."""
     def __init__(self, x, y, char, name, color, blocks=False,\
         always_visible=False, fighter=None, ai=None, item=None, equipment=None):

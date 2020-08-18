@@ -1,5 +1,5 @@
 """Support file with common help functions"""
-import libtcodpy as libtcod
+import tcod as libtcod
 import support.variables as var
 import textwrap
 

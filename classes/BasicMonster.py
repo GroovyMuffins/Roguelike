@@ -1,5 +1,5 @@
 """Class for basic monster"""
-import libtcodpy as libtcod
+import tcod as libtcod
 import support.variables as var
 
 class BasicMonster:

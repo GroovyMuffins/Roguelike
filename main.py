@@ -7,7 +7,7 @@ from classes.Item import Item
 from classes.Object import Object
 from classes.Rect import Rect
 from classes.Tile import Tile
-import libtcodpy as libtcod
+import tcod as libtcod
 import shelve
 from support.common import is_blocked, message
 import support.variables as var

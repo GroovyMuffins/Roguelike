@@ -1,8 +1,8 @@
 """Confused monster class"""
-import libtcodpy as libtcod
 from dataclasses import dataclass
 import support.variables as var
 from support.common import message
+import tcod as libtcod
 from typing import Any
 
 @dataclass
