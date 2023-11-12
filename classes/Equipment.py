@@ -1,13 +1,17 @@
 """Equipment class"""
 from dataclasses import dataclass
-import tcod as libtcod
-from support.common import get_equipped_in_slot, message
 from typing import Any
+
+import tcod as libtcod
+
+from support.common import get_equipped_in_slot, message
+
 
 @dataclass
 class Equipment:
     """An object that can be equipped, yielding bonuses.
     Automatically adds the Item component."""
+
     slot: Any = None
     is_equipped: bool = False
     power_bonus: int = 0
@@ -30,13 +34,11 @@ class Equipment:
 
         # equip object and show a message about it
         self.is_equipped = True
-        message('Equipped ' + self.owner.name + ' on ' + self.slot + '.',\
-            libtcod.light_green)
+        message("Equipped " + self.owner.name + " on " + self.slot + ".", libtcod.light_green)
 
     def dequip(self):
         """Dequip object and show a mesage about it"""
         if not self.is_equipped:
             return
         self.is_equipped = False
-        message('Dequipped ' + self.owner.name + ' from ' + self.slot + '.',\
-            libtcod.light_yellow)
+        message("Dequipped " + self.owner.name + " from " + self.slot + ".", libtcod.light_yellow)

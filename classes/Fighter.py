@@ -1,9 +1,11 @@
 """Fighter class"""
-from support.common import message, get_all_equipped
 import support.variables as var
+from support.common import get_all_equipped, message
+
 
 class Fighter:
     """combat-related properties and methods (monster, player, NPC)"""
+
     def __init__(self, hp, defense, power, xp, death_function=None):
         self.base_max_hp = hp
         self.hp = hp
@@ -35,25 +37,23 @@ class Fighter:
         damage = self.power - target.fighter.defense
 
         if damage > 0:
-            #make the target take some damage
-            message(self.owner.name.capitalize() + ' attacks ' + target.name\
-                + ' for ' + str(damage) + ' hit points.')
+            # make the target take some damage
+            message(self.owner.name.capitalize() + " attacks " + target.name + " for " + str(damage) + " hit points.")
             target.fighter.take_damage(damage)
         else:
-            message(self.owner.name.capitalize() + ' attacks ' + target.name\
-                + ' but it has no effect!')
+            message(self.owner.name.capitalize() + " attacks " + target.name + " but it has no effect!")
 
     def take_damage(self, damage):
         """apply damage if possible"""
         if damage > 0:
             self.hp -= damage
 
-            #check for death. if there's a death function, call it
+            # check for death. if there's a death function, call it
             if self.hp <= 0:
                 function = self.death_function
                 if function is not None:
                     function(self.owner)
-                if self.owner != var.player: # yield experience to the player
+                if self.owner != var.player:  # yield experience to the player
                     var.player.fighter.xp += self.xp
 
     def heal(self, amount):
