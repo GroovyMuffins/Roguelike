@@ -9,3 +9,6 @@ Pipfile
 
 # Generated files
 *.pyc
+
+# Virtual environment
+venv/
