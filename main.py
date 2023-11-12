@@ -852,7 +852,7 @@ def main_menu():
         if choice == 1:  # load last game
             try:
                 load_game()
-            except:
+            except:  # noqa: E722
                 msgbox("\n No saved game to load.\n", 24)
                 continue
             play_game()
