@@ -1,3 +1,7 @@
+from tcod import console, libtcodpy, map
+
+from classes import Object, Tile
+
 # Global variables
 
 # Font tile ids
@@ -57,17 +61,17 @@ TORCH_RADIUS = 10
 
 LIMIT_FPS = 20  # 20 frames-per-second maximum
 
-game_map = []
-game_objects = []
-player = None
-stairs = None
-inventory = []
-game_msgs = []
-game_state = None
-dungeon_level = None
+game_map: list[list[Tile.Tile]] = []
+game_objects: list[Object.Object] = []
+player: Object.Object | None = None
+stairs: Object.Object | None = None
+inventory: list[Object.Object] = []
+game_msgs: list[tuple[str, libtcodpy.Color]] = []
+game_state: str | None = None
+dungeon_level: int | None = None
 
-fov_map = None
-fov_recompute = True
+fov_map: map.Map | None = None
+fov_recompute: bool = True
 
-CON = None
-panel = None
+CON: console.Console | None = None
+panel: console.Console | None = None
