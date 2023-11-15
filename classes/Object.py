@@ -1,5 +1,7 @@
 """Object class"""
 import math
+from dataclasses import dataclass
+from typing import Any, Optional
 
 import tcod as libtcod
 
@@ -8,38 +10,37 @@ from classes.Item import Item
 from support.common import is_blocked
 
 
+@dataclass
 class Object:
     """This is generic object: the player, a monster, an item, the stairs...
     it's always represented by a character on screen."""
 
-    def __init__(
-        self, x, y, char, name, color, blocks=False, always_visible=False, fighter=None, ai=None, item=None, equipment=None
-    ):
-        self.x = x
-        self.y = y
-        self.char = char
-        self.name = name
-        self.color = color
-        self.blocks = blocks
-        self.always_visible = always_visible
+    x: int
+    y: int
+    char: str
+    name: str
+    color: libtcod.Color
+    blocks: bool = False
+    always_visible: bool = False
+    fighter: Optional[Any] = None
+    ai: Optional[Any] = None
+    item: Optional[Any] = None
+    equipment: Optional[Any] = None
 
-        self.fighter = fighter
+    def __post_init__(self):
         if self.fighter:  # let the fighter component know who owns it
             self.fighter.owner = self
 
-        self.ai = ai
         if self.ai:  # let the AI component know who owns it
             self.ai.owner = self
 
-        self.item = item
         if self.item:  # let the Item component know who owns it
             self.item.owner = self
 
-        self.equipment = equipment
         if self.equipment:  # let the Equipment component know who owns it
             self.equipment.owner = self
 
-            # there must be and Item component for the Equipment component to work properly
+            # there must be an Item component for the Equipment component to work properly
             self.item = Item()
             self.item.owner = self
 
