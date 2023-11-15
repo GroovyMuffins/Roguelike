@@ -1,7 +1,7 @@
 """Object class"""
 import math
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, Type
 
 import tcod as libtcod
 
@@ -44,13 +44,13 @@ class Object:
             self.item = Item()
             self.item.owner = self
 
-    def move(self, dx, dy):
+    def move(self, dx: int, dy: int):
         """move by the given amount, if the destination is not blocked"""
         if not is_blocked(self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
 
-    def move_towards(self, target_x, target_y):
+    def move_towards(self, target_x: int, target_y: int):
         """vector from this object to the target, and distance"""
         dx = target_x - self.x
         dy = target_y - self.y
@@ -62,23 +62,23 @@ class Object:
         dy = int(round(dy / distance))
         self.move(dx, dy)
 
-    def distance_to(self, other):
+    def distance_to(self, other: Type["Object"]) -> float:
         """return the distance to another object"""
         dx = other.x - self.x
         dy = other.y - self.y
         return math.sqrt(dx**2 + dy**2)
 
-    def distance(self, x, y):
+    def distance(self, x: int, y: int) -> float:
         """return the distance to some coordinates"""
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
-    def send_to_back(self):
+    def send_to_back(self) -> None:
         """make this object be drawn first,
         so all others appear above it if they're in the same tile."""
         var.game_objects.remove(self)
         var.game_objects.insert(0, self)
 
-    def draw(self):
+    def draw(self) -> None:
         """set the color and then draw the character that represents this object at its position"""
         # only show if it's visible to the player;
         # or it's set to "always visible" and on an explored tile
@@ -88,6 +88,6 @@ class Object:
             libtcod.console_set_default_foreground(var.CON, self.color)
             libtcod.console_put_char(var.CON, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
-    def clear(self):
+    def clear(self) -> None:
         """erase the character that represents this object"""
         libtcod.console_put_char(var.CON, self.x, self.y, " ", libtcod.BKGND_NONE)
