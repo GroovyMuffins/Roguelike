@@ -14,7 +14,7 @@ def get_equipped_in_slot(slot):
     return None
 
 
-def message(new_msg, color=libtcod.white):
+def message(new_msg: str, color: libtcod.Color = libtcod.white):
     """split the message if necessary, among multiple lines"""
     new_msg_lines = textwrap.wrap(new_msg, var.MSG_WIDTH)
 
@@ -27,7 +27,7 @@ def message(new_msg, color=libtcod.white):
         var.game_msgs.append((line, color))
 
 
-def get_all_equipped(obj):
+def get_all_equipped(obj) -> list:
     """Returns a list of equipped items"""
     if obj == var.player:
         equipped_list = []
@@ -39,7 +39,7 @@ def get_all_equipped(obj):
         return []  # other objects have no equipment
 
 
-def is_blocked(x, y):
+def is_blocked(x: int, y: int) -> bool:
     """first test the map tile"""
     if var.game_map[x][y].blocked:
         return True
