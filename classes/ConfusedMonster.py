@@ -15,7 +15,7 @@ class ConfusedMonster:
     old_ai: Any
     num_turns: int = var.CONFUSE_NUM_TURNS
 
-    def take_turn(self):
+    def take_turn(self) -> None:
         """AI for a confused monster."""
         if self.num_turns > 0:  # still confused...
             # move in a random direction, and decrease the number of turns confused

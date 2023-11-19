@@ -18,14 +18,14 @@ class Equipment:
     defense_bonus: int = 0
     max_hp_bonus: int = 0
 
-    def toggle_equip(self):
+    def toggle_equip(self) -> None:
         """Toggle equip/dequip status"""
         if self.is_equipped:
             self.dequip()
         else:
             self.equip()
 
-    def equip(self):
+    def equip(self) -> None:
         """Equip equipment"""
         # if the slot is already being used, dequip whatever is there first
         old_equipment = get_equipped_in_slot(self.slot)
@@ -36,7 +36,7 @@ class Equipment:
         self.is_equipped = True
         message("Equipped " + self.owner.name + " on " + self.slot + ".", libtcod.light_green)
 
-    def dequip(self):
+    def dequip(self) -> None:
         """Dequip object and show a mesage about it"""
         if not self.is_equipped:
             return

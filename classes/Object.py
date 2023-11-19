@@ -44,13 +44,13 @@ class Object:
             self.item = Item()
             self.item.owner = self
 
-    def move(self, dx: int, dy: int):
+    def move(self, dx: int, dy: int) -> None:
         """move by the given amount, if the destination is not blocked"""
         if not is_blocked(self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
 
-    def move_towards(self, target_x: int, target_y: int):
+    def move_towards(self, target_x: int, target_y: int) -> None:
         """vector from this object to the target, and distance"""
         dx = target_x - self.x
         dy = target_y - self.y

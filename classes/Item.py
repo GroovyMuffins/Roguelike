@@ -14,10 +14,12 @@ class Item:
 
     use_function: Any = None
 
-    def use(self):
-        """just call the "use_function" if it is defined"""
-        # special case: if the object has the Equipment component,
-        # the "use" action is to equip/dequip
+    def use(self) -> None:
+        """just call the "use_function" if it is defined
+
+        special case: if the object has the Equipment component,
+        the "use" action is to equip/dequip
+        """
         if self.owner.equipment:
             self.owner.equipment.toggle_equip()
             return
@@ -29,8 +31,7 @@ class Item:
                 # destroy after use, unless it was cancelled for some reason
                 var.inventory.remove(self.owner)
 
-    # an item that can be picked up and used.
-    def pick_up(self):
+    def pick_up(self) -> None:
         """add to the player's inventory and remove from the map"""
         if len(var.inventory) >= 26:
             message("Your inventory is full, cannot pick up " + self.owner.name + ".", libtcod.red)
@@ -44,7 +45,7 @@ class Item:
         if equipment and get_equipped_in_slot(equipment.slot) is None:
             equipment.equip()
 
-    def drop(self):
+    def drop(self) -> None:
         """add to the map and remove from the player's inventory.
         also, place it at the player's coordinates"""
         var.game_objects.append(self.owner)

@@ -1,5 +1,6 @@
 """This module sets up initial rogue basin game."""
 import shelve
+from typing import Optional
 
 import tcod as libtcod
 
@@ -15,7 +16,7 @@ from classes.Tile import Tile
 from support.common import is_blocked, message
 
 
-def check_level_up():
+def check_level_up() -> None:
     """see if the player's experience is enough to level-up"""
     level_up_xp = var.LEVEL_UP_BASE + var.player.level * var.LEVEL_UP_FACTOR
     if var.player.fighter.xp >= level_up_xp:
@@ -102,7 +103,7 @@ def cast_fireball():
             obj.fighter.take_damage(var.FIREBALL_DAMAGE)
 
 
-def closest_monster(max_range):
+def closest_monster(max_range: int):
     """find closest enemy, up to a maximum range, and in the player's FOV"""
     closest_enemy = None
     closest_dist = max_range + 1  # start with (slightly more than) maximum range
@@ -117,7 +118,7 @@ def closest_monster(max_range):
     return closest_enemy
 
 
-def target_tile(max_range=None):
+def target_tile(max_range: int | None = None):
     """return the position of a tile left-clicked in player's FOV (optionally in a range),
     or (None,None) if right-clicked."""
     global key, mouse
@@ -557,7 +558,7 @@ def render_all():
     libtcod.console_blit(var.panel, 0, 0, var.SCREEN_WIDTH, var.PANEL_HEIGHT, 0, 0, var.PANEL_Y)
 
 
-def player_move_or_attack(dx, dy):
+def player_move_or_attack(dx: int, dy: int) -> None:
     # the coordinates the payer is moving to/attacking
     x = var.player.x + dx
     y = var.player.y + dy
@@ -652,7 +653,7 @@ def handle_keys():
             return "didnt-take-turn"
 
 
-def next_level():
+def next_level() -> None:
     """advance to the next level"""
     message("You take a moment to rest, and recover your strength.", libtcod.light_violet)
     var.player.fighter.heal(var.player.fighter.max_hp / 2)  # heal the player by 50%
@@ -663,7 +664,7 @@ def next_level():
     initialize_fov()
 
 
-def get_names_under_mouse():
+def get_names_under_mouse() -> str:
     """return a string with the names of all objects under the mouse"""
     global mouse
 
@@ -679,7 +680,7 @@ def get_names_under_mouse():
     return names.capitalize()
 
 
-def menu(header, options, width):
+def menu(header: str, options: list[str], width: int):
     """create a menu"""
     if len(options) > 26:
         raise ValueError("Cannot have a menu with more than 26 options.")
@@ -724,7 +725,7 @@ def menu(header, options, width):
     return None
 
 
-def inventory_menu(header):
+def inventory_menu(header: str) -> Optional[Item]:
     """show a menu with each item of the inventory as an option"""
     if len(var.inventory) == 0:
         options = ["Inventory is empty."]
@@ -745,7 +746,7 @@ def inventory_menu(header):
     return var.inventory[index].item
 
 
-def new_game():
+def new_game() -> None:
     """create a new game"""
     # create object representing the player
     fighter_component = Fighter(hp=100, defense=1, power=2, xp=0, death_function=player_death)
@@ -775,7 +776,7 @@ def new_game():
     obj.always_visible = True
 
 
-def initialize_fov():
+def initialize_fov() -> None:
     """initialize field of view"""
     # create the FOV map, according to the generated map
     var.fov_map = libtcod.map_new(var.MAP_WIDTH, var.MAP_HEIGHT)
@@ -787,7 +788,7 @@ def initialize_fov():
     var.fov_recompute = True
 
 
-def play_game():
+def play_game() -> None:
     """play the game"""
     global key, mouse
 
@@ -821,7 +822,7 @@ def play_game():
                     obj.ai.take_turn()
 
 
-def main_menu():
+def main_menu() -> None:
     """create a main menu"""
     img = libtcod.image_load("menu_background.png")
 
@@ -860,12 +861,12 @@ def main_menu():
             break
 
 
-def msgbox(text, width=50):
+def msgbox(text: str, width: int = 50) -> None:
     """create a message box"""
     menu(text, [], width)  # use menu() as a sort of "message box"
 
 
-def save_game():
+def save_game() -> None:
     """open a new empty shelve (possibly overwriting an old one) to write the game data"""
     file = shelve.open("savegame", "n")
     file["game_map"] = var.game_map
@@ -879,7 +880,7 @@ def save_game():
     file.close()
 
 
-def load_game():
+def load_game() -> None:
     """open the previously saved shelve and load the game data"""
     file = shelve.open("savegame", "r")
     var.game_map = file["game_map"]
@@ -895,7 +896,7 @@ def load_game():
     initialize_fov()
 
 
-def load_customfont():
+def load_customfont() -> None:
     """The index of the first custom tile in the file"""
     a = 256
 

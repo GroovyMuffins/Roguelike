@@ -1,12 +1,13 @@
 """Support file with common help functions"""
 import textwrap
+from typing import Any
 
 import tcod as libtcod
 
 import support.variables as var
 
 
-def get_equipped_in_slot(slot):
+def get_equipped_in_slot(slot) -> Any:
     """Returns the equipment in a slot, or None if it's empty"""
     for obj in var.inventory:
         if obj.equipment and obj.equipment.slot == slot and obj.equipment.is_equipped:
@@ -14,7 +15,7 @@ def get_equipped_in_slot(slot):
     return None
 
 
-def message(new_msg: str, color: libtcod.Color = libtcod.white):
+def message(new_msg: str, color: libtcod.Color = libtcod.white) -> None:
     """split the message if necessary, among multiple lines"""
     new_msg_lines = textwrap.wrap(new_msg, var.MSG_WIDTH)
 
