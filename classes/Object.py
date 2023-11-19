@@ -17,7 +17,7 @@ class Object:
 
     x: int
     y: int
-    char: str
+    char: int
     name: str
     color: libtcod.Color
     blocks: bool = False
