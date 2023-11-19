@@ -1,21 +1,21 @@
 """Fighter class"""
-from dataclasses import dataclass
-from typing import Any
+
+from typing import Callable
 
 import support.variables as var
 from support.common import get_all_equipped, message
 
 
-@dataclass
 class Fighter:
     """combat-related properties and methods (monster, player, NPC)"""
 
-    base_max_hp: int
-    hp: int
-    base_defense: int
-    base_power: int
-    xp: int
-    death_function: Any = None
+    def __init__(self, hp: int, defense: int, power: int, xp: int, death_function: Callable | None = None):
+        self.base_max_hp: int = hp
+        self.hp: int = hp
+        self.base_defense: int = defense
+        self.base_power: int = power
+        self.xp: int = xp
+        self.death_function: Callable | None = death_function
 
     @property
     def power(self) -> int:
