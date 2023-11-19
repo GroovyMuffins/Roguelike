@@ -1,38 +1,41 @@
 """Fighter class"""
+from dataclasses import dataclass
+from typing import Any
+
 import support.variables as var
 from support.common import get_all_equipped, message
 
 
+@dataclass
 class Fighter:
     """combat-related properties and methods (monster, player, NPC)"""
 
-    def __init__(self, hp, defense, power, xp, death_function=None):
-        self.base_max_hp = hp
-        self.hp = hp
-        self.base_defense = defense
-        self.base_power = power
-        self.xp = xp
-        self.death_function = death_function
+    base_max_hp: int
+    hp: int
+    base_defense: int
+    base_power: int
+    xp: int
+    death_function: Any = None
 
     @property
-    def power(self):
+    def power(self) -> int:
         """Return actual power, by summing up the bonuses from all equipped items"""
         bonus = sum(equipment.power_bonus for equipment in get_all_equipped(self.owner))
         return self.base_power + bonus
 
     @property
-    def defense(self):
+    def defense(self) -> int:
         """Return actual defense, by summing up the bonuses from all equipped items"""
         bonus = sum(equipment.defense_bonus for equipment in get_all_equipped(self.owner))
         return self.base_defense + bonus
 
     @property
-    def max_hp(self):
+    def max_hp(self) -> int:
         """Return actual max_hp, by summing up the bonuses from all equipped items"""
         bonus = sum(equipment.max_hp_bonus for equipment in get_all_equipped(self.owner))
         return self.base_max_hp + bonus
 
-    def attack(self, target):
+    def attack(self, target) -> None:
         """a simple formula for attack damage"""
         damage = self.power - target.fighter.defense
 
@@ -43,7 +46,7 @@ class Fighter:
         else:
             message(self.owner.name.capitalize() + " attacks " + target.name + " but it has no effect!")
 
-    def take_damage(self, damage):
+    def take_damage(self, damage: int) -> None:
         """apply damage if possible"""
         if damage > 0:
             self.hp -= damage
@@ -56,7 +59,7 @@ class Fighter:
                 if self.owner != var.player:  # yield experience to the player
                     var.player.fighter.xp += self.xp
 
-    def heal(self, amount):
+    def heal(self, amount: int) -> None:
         """heal by the given amount, without going over the maximum"""
         self.hp += amount
         if self.hp > self.max_hp:
