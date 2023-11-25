@@ -481,14 +481,13 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
         libtcod.console_rect(var.panel, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
 
     # finally, some centered text with the values
-    libtcod.console_set_default_foreground(var.panel, libtcod.white)
-    libtcod.console_print_ex(
-        var.panel,
+    var.panel.default_fg = libtcod.white
+    var.panel.print_(
         int(x + total_width / 2),
         y,
+        f"{name}: {str(value)}/{str(maximum)}",
         libtcod.BKGND_NONE,
         libtcod.CENTER,
-        name + ": " + str(value) + "/" + str(maximum),
     )
 
 
@@ -539,8 +538,8 @@ def render_all():
     # print the game messages, one line at a time
     y = 1
     for line, color in var.game_msgs:
-        libtcod.console_set_default_foreground(var.panel, color)
-        libtcod.console_print_ex(var.panel, int(const.MSG_X), y, libtcod.BKGND_NONE, libtcod.LEFT, line)
+        var.panel.default_fg = color
+        var.panel.print_(int(const.MSG_X), y, line, libtcod.BKGND_NONE, libtcod.LEFT)
         y += 1
 
     # show the player's stats
@@ -548,11 +547,11 @@ def render_all():
         1, 1, const.BAR_WIDTH, "HP", var.player.fighter.hp, var.player.fighter.max_hp, libtcod.light_red, libtcod.darker_red
     )
 
-    libtcod.console_print_ex(var.panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT, "Dungeon level " + str(var.dungeon_level))
+    var.panel.print_(1, 3, f"Dungeon level {str(var.dungeon_level)}", libtcod.BKGND_NONE, libtcod.LEFT)
 
     # display names of objects under the mouse
-    libtcod.console_set_default_foreground(var.panel, libtcod.light_gray)
-    libtcod.console_print_ex(var.panel, 1, 0, libtcod.BKGND_NONE, libtcod.LEFT, get_names_under_mouse())
+    var.panel.default_fg = libtcod.light_gray
+    var.panel.print_(1, 0, get_names_under_mouse(), libtcod.BKGND_NONE, libtcod.LEFT)
 
     # blit the contents of "panel" to the root console
     libtcod.console_blit(var.panel, 0, 0, const.SCREEN_WIDTH, const.PANEL_HEIGHT, 0, 0, const.PANEL_Y)
@@ -695,7 +694,7 @@ def menu(header: str, options: list[str], width: int):
     window = libtcod.console_new(width, height)
 
     # print the header, with auto-wrap
-    libtcod.console_set_default_foreground(window, libtcod.white)
+    window.default_fg = libtcod.white
     libtcod.console_print_rect_ex(window, 0, 0, width, height, libtcod.BKGND_NONE, libtcod.LEFT, header)
 
     # print all the options
@@ -703,7 +702,7 @@ def menu(header: str, options: list[str], width: int):
     letter_index = ord("a")
     for option_text in options:
         text = "(" + chr(letter_index) + ")" + option_text
-        libtcod.console_print_ex(window, 0, y, libtcod.BKGND_NONE, libtcod.LEFT, text)
+        window.print_(0, y, text, libtcod.BKGND_NONE, libtcod.LEFT)
         y += 1
         letter_index += 1
 
