@@ -1,14 +1,19 @@
 """Rect class"""
+from dataclasses import dataclass
 
 
+@dataclass
 class Rect:
     """a rectangle on the map. used to characterize a room."""
 
-    def __init__(self, x, y, width, height):
-        self.x1 = x
-        self.y1 = y
-        self.x2 = x + width
-        self.y2 = y + height
+    x1: int
+    y1: int
+    w: int
+    h: int
+
+    def __post_init__(self):
+        self.x2 = self.x1 + self.w
+        self.y2 = self.y1 + self.h
 
     def center(self):
         """return center coordinates of the room"""
