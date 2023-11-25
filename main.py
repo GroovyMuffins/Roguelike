@@ -23,16 +23,16 @@ def check_level_up() -> None:
         # it is! level up
         var.player.level += 1
         var.player.fighter.xp -= level_up_xp
-        message("Your battle skills grow stronger! You reached level " + str(var.player.level) + "!", libtcod.yellow)
+        message(f"Your battle skills grow stronger! You reached level {str(var.player.level)}!", libtcod.yellow)
 
         choice = None
         while choice is None:  # keep asking until a choice is made
             choice = menu(
                 "Level up! Choose a stat to raise:\n",
                 [
-                    "Constitution (+20 HP, from " + str(var.player.fighter.max_hp) + ")",
-                    "Strength (+1 attack, from " + str(var.player.fighter.base_power) + ")",
-                    "Agility (+1 defense, from " + str(var.player.fighter.base_defense) + ")",
+                    f"Constitution (+20 HP, from {str(var.player.fighter.max_hp)})",
+                    f"Strength (+1 attack, from {str(var.player.fighter.base_power)})",
+                    f"Agility (+1 defense, from {str(var.player.fighter.base_defense)})",
                 ],
                 var.LEVEL_SCREEN_WIDTH,
             )
@@ -65,11 +65,8 @@ def cast_lightning():
 
     # zap it!
     message(
-        "A lightning bolt strikes the "
-        + monster.name
-        + " with a loud thunder! The damage is "
-        + str(var.LIGHTNING_DAMAGE)
-        + " hit points.",
+        f"A lightning bolt strikes the {monster.name} with a loud thunder! "
+        f"The damage is {str(var.LIGHTNING_DAMAGE)} hit points.",
         color=libtcod.light_blue,
     )
     monster.fighter.take_damage(var.LIGHTNING_DAMAGE)
@@ -86,7 +83,7 @@ def cast_confuse():
     old_ai = monster.ai
     monster.ai = ConfusedMonster(old_ai)
     monster.ai.owner = monster  # tell the new component who owns it
-    message("The eyes of the " + monster.name + " look vacant, as he starts to stumble around!", libtcod.light_green)
+    message(f"The eyes of the {monster.name} look vacant, as he starts to stumble around!", libtcod.light_green)
 
 
 def cast_fireball():
@@ -95,11 +92,11 @@ def cast_fireball():
     (x, y) = target_tile()
     if x is None:
         return "cancelled"
-    message("The fireball explodes, burning everything within " + str(var.FIREBALL_RADIUS) + " tiles!", libtcod.orange)
+    message(f"The fireball explodes, burning everything within {str(var.FIREBALL_RADIUS)} tiles!", libtcod.orange)
 
     for obj in var.game_objects:  # damage every fighter in range, including the player
         if obj.distance(x, y) <= var.FIREBALL_RADIUS and obj.fighter:
-            message("The " + obj.name + " gets burned for " + str(var.FIREBALL_DAMAGE) + " hit points.", libtcod.orange)
+            message(f"The {obj.name} gets burned for {str(var.FIREBALL_DAMAGE)} hit points.", libtcod.orange)
             obj.fighter.take_damage(var.FIREBALL_DAMAGE)
 
 
@@ -167,7 +164,7 @@ def player_death(player):
 
 def monster_death(monster):
     """transform it into a nasty corpse! it doesn't block, can't be attacked and doesn't move"""
-    message("The " + monster.name + " is dead! You gain " + str(monster.fighter.xp) + " experience points.", libtcod.orange)
+    message(f"The {monster.name} is dead! You gain {str(monster.fighter.xp)} experience points.", libtcod.orange)
     monster.char = "%"
     monster.color = libtcod.dark_red
     monster.blocks = False
