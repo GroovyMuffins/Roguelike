@@ -26,6 +26,7 @@ class Object:
     ai: Optional[Any] = None
     item: Optional[Any] = None
     equipment: Optional[Any] = None
+    level: Optional[int] = None
 
     def __post_init__(self):
         if self.fighter:  # let the fighter component know who owns it
