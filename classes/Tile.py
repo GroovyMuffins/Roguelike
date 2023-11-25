@@ -1,16 +1,14 @@
 """Tile class"""
+from dataclasses import dataclass
 
 
+@dataclass
 class Tile:
     """A tile of the map and its properties"""
 
-    def __init__(self, blocked, block_sight=None):
-        self.blocked = blocked
+    blocked: bool
+    block_sight: bool | None = None
+    explored: bool = False
 
-        # all tiles start unexplored
-        self.explored = False
-
-        # by default, if a tile is blocked, it also blocks sight
-        if block_sight is None:
-            block_sight = blocked
-        self.block_sight = block_sight
+    def __post_init__(self):
+        self.block_sight = self.blocked if self.block_sight is None else self.block_sight
