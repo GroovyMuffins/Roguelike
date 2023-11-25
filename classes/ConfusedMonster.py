@@ -4,7 +4,7 @@ from typing import Any
 
 import tcod as libtcod
 
-import support.variables as var
+import support.constants as const
 from support.common import message
 
 
@@ -13,7 +13,7 @@ class ConfusedMonster:
     """AI for a temporarily confused monster (reverts to previous AI after a while)."""
 
     old_ai: Any
-    num_turns: int = var.CONFUSE_NUM_TURNS
+    num_turns: int = const.CONFUSE_NUM_TURNS
 
     def take_turn(self) -> None:
         """AI for a confused monster."""

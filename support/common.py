@@ -4,6 +4,7 @@ from typing import Any
 
 import tcod as libtcod
 
+import support.constants as const
 import support.variables as var
 
 
@@ -17,11 +18,11 @@ def get_equipped_in_slot(slot) -> Any:
 
 def message(new_msg: str, color: libtcod.Color = libtcod.white) -> None:
     """split the message if necessary, among multiple lines"""
-    new_msg_lines = textwrap.wrap(new_msg, var.MSG_WIDTH)
+    new_msg_lines = textwrap.wrap(new_msg, const.MSG_WIDTH)
 
     for line in new_msg_lines:
         # if the buffer is full, remove the first line to make room for the new one
-        if len(var.game_msgs) == var.MSG_HEIGHT:
+        if len(var.game_msgs) == const.MSG_HEIGHT:
             del var.game_msgs[0]
 
         # add the new line as a tuple, with the tex and the color
