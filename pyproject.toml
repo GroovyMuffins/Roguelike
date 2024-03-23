@@ -1,3 +1,8 @@
+[project]
+name = "roguelike"
+version = "0.0.1"
+dependencies = ["tcod==16.2.2", "ruff==0.3.4"]
+
 [tool.ruff]
 line-length = 127
 target-version = "py310"
