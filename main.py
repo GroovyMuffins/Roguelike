@@ -98,6 +98,8 @@ def cast_fireball():
 
 def closest_monster(max_range: int):
     """Find closest enemy, up to a maximum range, and in the player's FOV"""
+    if rl.variables.fov_map is None or rl.variables.player is None:
+        return
     closest_enemy = None
     closest_dist = max_range + 1  # start with (slightly more than) maximum range
 
@@ -115,6 +117,8 @@ def target_tile(max_range: int | None = None):
     """Return the position of a tile left-clicked in player's FOV (optionally in a range),
     or (None,None) if right-clicked.
     """
+    if rl.variables.fov_map is None or rl.variables.player is None:
+        return
     global key, mouse
     while True:
         # render the screen. this erases the inventory
@@ -482,25 +486,28 @@ def from_dungeon_level(table):
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     """Render a bar (HP, experience, etc). first calculate the widt o the bar"""
+    if rl.variables.panel is None:
+        return
     load_customfont()
 
     bar_width = int(float(value) / maximum * total_width)
 
     # render the background first
-    libtcod.console_set_default_background(var.panel, back_color)
-    libtcod.console_rect(var.panel, x, y, total_width, 1, False, libtcod.BKGND_SCREEN)
+    rl.variables.panel.default_bg = back_color
+    rl.variables.panel.rect(x, y, total_width, 1, False, libtcod.BKGND_SCREEN)
 
     # now render the bar on top
-    libtcod.console_set_default_background(var.panel, bar_color)
+    rl.variables.panel.default_bg = bar_color
     if bar_width > 0:
-        libtcod.console_rect(var.panel, x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
+        rl.variables.panel.rect(x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
 
     # finally, some centered text with the values
-    var.panel.default_fg = libtcod.white
-    var.panel.print_(
+    rl.variables.panel.print(
         int(x + total_width / 2),
         y,
         f"{name}: {str(value)}/{str(maximum)}",
+        libtcod.white,
+        bar_color,
         libtcod.BKGND_NONE,
         libtcod.CENTER,
     )
@@ -508,6 +515,9 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
 def render_all():
     """Draw all objects in the list"""
+    if rl.variables.panel is None or rl.variables.CON is None or rl.variables.fov_map is None:
+        return
+
     if rl.variables.fov_recompute:
         # recompute FOV if needed (the player moved or something)
         rl.variables.fov_recompute = False
@@ -556,14 +566,12 @@ def render_all():
     libtcod.console_blit(rl.variables.CON, 0, 0, rl.constants.SCREEN_WIDTH, rl.constants.SCREEN_HEIGHT, 0, 0, 0)
 
     # prepare to render the GUI panel
-    libtcod.console_set_default_background(var.panel, libtcod.black)
-    libtcod.console_clear(var.panel)
+    libtcod.console_clear(rl.variables.panel)
 
     # print the game messages, one line at a time
     y = 1
-    for line, color in var.game_msgs:
-        var.panel.default_fg = color
-        var.panel.print_(int(const.MSG_X), y, line, libtcod.BKGND_NONE, libtcod.LEFT)
+    for line, color in rl.variables.game_msgs:
+        rl.variables.panel.print(int(rl.constants.MSG_X), y, line, color, libtcod.black, libtcod.BKGND_NONE, libtcod.LEFT)
         y += 1
 
     # show the player's stats
@@ -578,14 +586,17 @@ def render_all():
         libtcod.darker_red,
     )
 
-    var.panel.print_(1, 3, f"Dungeon level {str(var.dungeon_level)}", libtcod.BKGND_NONE, libtcod.LEFT)
+    rl.variables.panel.print_(1, 3, f"Dungeon level {str(rl.variables.dungeon_level)}", libtcod.BKGND_NONE, libtcod.LEFT)
 
     # display names of objects under the mouse
-    var.panel.default_fg = libtcod.light_gray
-    var.panel.print_(1, 0, get_names_under_mouse(), libtcod.BKGND_NONE, libtcod.LEFT)
+    rl.variables.panel.print(
+        1, 0, get_names_under_mouse(), libtcod.light_gray, libtcod.black, libtcod.BKGND_NONE, libtcod.LEFT
+    )
 
     # blit the contents of "panel" to the root console
-    libtcod.console_blit(var.panel, 0, 0, const.SCREEN_WIDTH, const.PANEL_HEIGHT, 0, 0, const.PANEL_Y)
+    libtcod.console_blit(
+        rl.variables.panel, 0, 0, rl.constants.SCREEN_WIDTH, rl.constants.PANEL_HEIGHT, 0, 0, rl.constants.PANEL_Y
+    )
 
 
 def player_move_or_attack(dx: int, dy: int) -> None:
@@ -696,6 +707,8 @@ def next_level() -> None:
 
 def get_names_under_mouse() -> str:
     """Return a string with the names of all objects under the mouse"""
+    if rl.variables.fov_map is None:
+        return
     global mouse
 
     (x, y) = (mouse.cx, mouse.cy)
@@ -722,11 +735,11 @@ def menu(header: str, options: list[str], width: int):
     height = len(options) + header_height
 
     # create an off-screen console that represents the menu's window
-    window = libtcod.console_new(width, height)
+    window = libtcod.console.Console(width, height)
 
     # print the header, with auto-wrap
     window.default_fg = libtcod.white
-    libtcod.console_print_rect_ex(window, 0, 0, width, height, libtcod.BKGND_NONE, libtcod.LEFT, header)
+    window.print_rect(0, 0, width, height, header, libtcod.BKGND_NONE, libtcod.LEFT)
 
     # print all the options
     y = header_height
