@@ -1,16 +1,18 @@
 """Equipment class"""
+
 from dataclasses import dataclass
 from typing import Any
 
 import tcod as libtcod
 
-from support.common import get_equipped_in_slot, message
+from ..support.common import get_equipped_in_slot, message
 
 
 @dataclass
 class Equipment:
     """An object that can be equipped, yielding bonuses.
-    Automatically adds the Item component."""
+    Automatically adds the Item component.
+    """
 
     slot: Any = None
     is_equipped: bool = False

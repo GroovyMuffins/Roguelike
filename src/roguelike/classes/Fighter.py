@@ -1,9 +1,9 @@
 """Fighter class"""
 
-from typing import Callable
+from collections.abc import Callable
 
-import support.variables as var
-from support.common import get_all_equipped, message
+from ..support import variables as var
+from ..support.common import get_all_equipped, message
 
 
 class Fighter:
@@ -36,7 +36,7 @@ class Fighter:
         return self.base_max_hp + bonus
 
     def attack(self, target) -> None:
-        """a simple formula for attack damage"""
+        """A simple formula for attack damage"""
         damage = self.power - target.fighter.defense
 
         if damage > 0:
@@ -47,7 +47,7 @@ class Fighter:
             message(self.owner.name.capitalize() + " attacks " + target.name + " but it has no effect!")
 
     def take_damage(self, damage: int) -> None:
-        """apply damage if possible"""
+        """Apply damage if possible"""
         if damage > 0:
             self.hp -= damage
 
@@ -60,7 +60,7 @@ class Fighter:
                     var.player.fighter.xp += self.xp
 
     def heal(self, amount: int) -> None:
-        """heal by the given amount, without going over the maximum"""
+        """Heal by the given amount, without going over the maximum"""
         self.hp += amount
         if self.hp > self.max_hp:
             self.hp = self.max_hp

@@ -1,11 +1,12 @@
 """Support file with common help functions"""
+
 import textwrap
 from typing import Any
 
 import tcod as libtcod
 
-import support.constants as const
-import support.variables as var
+from . import constants as const
+from . import variables as var
 
 
 def get_equipped_in_slot(slot) -> Any:
@@ -17,7 +18,7 @@ def get_equipped_in_slot(slot) -> Any:
 
 
 def message(new_msg: str, color: libtcod.Color = libtcod.white) -> None:
-    """split the message if necessary, among multiple lines"""
+    """Split the message if necessary, among multiple lines"""
     new_msg_lines = textwrap.wrap(new_msg, const.MSG_WIDTH)
 
     for line in new_msg_lines:
@@ -42,7 +43,7 @@ def get_all_equipped(obj) -> list:
 
 
 def is_blocked(x: int, y: int) -> bool:
-    """first test the map tile"""
+    """First test the map tile"""
     if var.game_map[x][y].blocked:
         return True
 

@@ -1,13 +1,14 @@
 """Object class"""
+
 import math
 from dataclasses import dataclass
 from typing import Any, Optional, Type
 
 import tcod as libtcod
 
-import support.variables as var
-from classes.Item import Item
-from support.common import is_blocked
+from ..support import variables as var
+from ..support.common import is_blocked
+from . import Item
 
 
 @dataclass

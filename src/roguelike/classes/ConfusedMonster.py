@@ -1,11 +1,12 @@
 """Confused monster class"""
+
 from dataclasses import dataclass
 from typing import Any
 
 import tcod as libtcod
 
-import support.constants as const
-from support.common import message
+from ..support import constants as const
+from ..support.common import message
 
 
 @dataclass

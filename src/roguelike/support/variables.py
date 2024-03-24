@@ -1,7 +1,8 @@
 """Global variables for the game."""
+
 from tcod import console, libtcodpy, map
 
-from classes import Object, Tile
+from ..classes import Object, Tile
 
 game_map: list[list[Tile.Tile]] = []
 game_objects: list[Object.Object] = []
