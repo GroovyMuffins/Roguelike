@@ -1,4 +1,5 @@
 """Rect class"""
+
 from dataclasses import dataclass
 
 

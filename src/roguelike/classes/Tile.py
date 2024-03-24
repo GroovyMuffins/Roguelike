@@ -1,4 +1,5 @@
 """Tile class"""
+
 from dataclasses import dataclass
 
 
