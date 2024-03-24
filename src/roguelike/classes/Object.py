@@ -30,6 +30,7 @@ class Object:
     level: int | None = None
 
     def __post_init__(self):
+        """Set properties after initialization."""
         if self.fighter:  # let the fighter component know who owns it
             self.fighter.owner = self
 

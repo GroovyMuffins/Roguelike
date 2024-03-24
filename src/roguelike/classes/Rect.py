@@ -13,6 +13,7 @@ class Rect:
     h: int
 
     def __post_init__(self):
+        """Set properties after initializaion."""
         self.x2 = self.x1 + self.w
         self.y2 = self.y1 + self.h
 

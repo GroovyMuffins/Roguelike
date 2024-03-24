@@ -12,4 +12,5 @@ class Tile:
     explored: bool = False
 
     def __post_init__(self):
+        """Set properties after initialization."""
         self.block_sight = self.blocked if self.block_sight is None else self.block_sight

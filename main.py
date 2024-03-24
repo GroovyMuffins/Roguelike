@@ -473,9 +473,7 @@ def random_choice(chances_dict):
 
 
 def from_dungeon_level(table):
-    """Returns a value that depends on level.
-    The table specifies what value occurs after each level, default is 0.
-    """
+    """Returns a value that depends on level. The table specifies what value occurs after each level, default is 0."""
     for value, level in reversed(table):
         if rl.variables.dungeon_level >= level:
             return value
@@ -598,6 +596,7 @@ def render_all():
 
 
 def player_move_or_attack(dx: int, dy: int) -> None:
+    """Move or attach with player."""
     # the coordinates the payer is moving to/attacking
     x = rl.variables.player.x + dx
     y = rl.variables.player.y + dy

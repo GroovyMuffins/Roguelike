@@ -10,6 +10,7 @@ class Fighter:
     """combat-related properties and methods (monster, player, NPC)."""
 
     def __init__(self, hp: int, defense: int, power: int, xp: int, death_function: Callable | None = None):
+        """Initialize class."""
         self.base_max_hp: int = hp
         self.hp: int = hp
         self.base_defense: int = defense
