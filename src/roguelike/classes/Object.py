@@ -84,14 +84,18 @@ class Object:
 
     def draw(self) -> None:
         """Set the color and then draw the character that represents this object at its position"""
+        if var.fov_map is None or var.CON is None:
+            return
         # only show if it's visible to the player;
         # or it's set to "always visible" and on an explored tile
         if libtcod.map_is_in_fov(var.fov_map, self.x, self.y) or (
             self.always_visible and var.game_map[self.x][self.y].explored
         ):
-            libtcod.console_set_default_foreground(var.CON, self.color)
+            var.CON.default_fg = self.color
             libtcod.console_put_char(var.CON, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
     def clear(self) -> None:
         """Erase the character that represents this object"""
+        if var.CON is None:
+            return
         libtcod.console_put_char(var.CON, self.x, self.y, " ", libtcod.BKGND_NONE)
