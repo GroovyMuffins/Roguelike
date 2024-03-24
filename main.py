@@ -7,7 +7,7 @@ import tcod as libtcod
 
 
 def check_level_up() -> None:
-    """See if the player's experience is enough to level-up"""
+    """See if the player's experience is enough to level-up."""
     level_up_xp = rl.constants.LEVEL_UP_BASE + rl.variables.player.level * rl.constants.LEVEL_UP_FACTOR
     if rl.variables.player.fighter.xp >= level_up_xp:
         # it is! level up
@@ -39,7 +39,7 @@ def check_level_up() -> None:
 
 
 def cast_heal():
-    """Heal the player"""
+    """Heal the player."""
     if rl.variables.player.fighter.hp == rl.variables.player.fighter.max_hp:
         rl.common.message("You are already at full health.", libtcod.red)
         return "cancelled"
@@ -49,7 +49,7 @@ def cast_heal():
 
 
 def cast_lightning():
-    """Find closest enemy (inside a maximum range) and damage it"""
+    """Find closest enemy (inside a maximum range) and damage it."""
     monster = closest_monster(rl.constants.LIGHTNING_RANGE)
     if monster is None:  # no enemy found within maximum range
         rl.common.message("No enemy is close enough to strike.", libtcod.red)
@@ -65,7 +65,7 @@ def cast_lightning():
 
 
 def cast_confuse():
-    """Ask the player for a target to confuse"""
+    """Ask the player for a target to confuse."""
     rl.common.message("Left-click an enemy to confuse it, or right-click to cancel.", libtcod.light_cyan)
     monster = target_monster(rl.constants.CONFUSE_RANGE)
     if monster is None:
@@ -79,7 +79,7 @@ def cast_confuse():
 
 
 def cast_fireball():
-    """Ask the player for a target tile to throw a fireball at"""
+    """Ask the player for a target tile to throw a fireball at."""
     rl.common.message("Left-click a target tile for the fireball, or right-click to cancel.", libtcod.light_cyan)
     (x, y) = target_tile()
     if x is None:
@@ -97,7 +97,7 @@ def cast_fireball():
 
 
 def closest_monster(max_range: int):
-    """Find closest enemy, up to a maximum range, and in the player's FOV"""
+    """Find closest enemy, up to a maximum range, and in the player's FOV."""
     if rl.variables.fov_map is None or rl.variables.player is None:
         return
     closest_enemy = None
@@ -114,9 +114,7 @@ def closest_monster(max_range: int):
 
 
 def target_tile(max_range: int | None = None):
-    """Return the position of a tile left-clicked in player's FOV (optionally in a range),
-    or (None,None) if right-clicked.
-    """
+    """Return the position of a tile left-clicked in player's FOV (optionally in a range), or (None,None) if right-clicked."""
     if rl.variables.fov_map is None or rl.variables.player is None:
         return
     global key, mouse
@@ -141,7 +139,7 @@ def target_tile(max_range: int | None = None):
 
 
 def target_monster(max_range=None):
-    """Returns a clicked monster inside FOV up to a range, or None if right-clicked"""
+    """Returns a clicked monster inside FOV up to a range, or None if right-clicked."""
     while True:
         (x, y) = target_tile(max_range)
         if x is None:  # player cancelled
@@ -164,7 +162,7 @@ def player_death(player):
 
 
 def monster_death(monster):
-    """Transform it into a nasty corpse! it doesn't block, can't be attacked and doesn't move"""
+    """Transform it into a nasty corpse! it doesn't block, can't be attacked and doesn't move."""
     rl.common.message(f"The {monster.name} is dead! You gain {str(monster.fighter.xp)} experience points.", libtcod.orange)
     monster.char = "%"
     monster.color = libtcod.dark_red
@@ -176,7 +174,7 @@ def monster_death(monster):
 
 
 def create_room(room):
-    """Create room"""
+    """Create room."""
     # go through the tiles in the rectangle and make them passable
     for x in range(room.x1 + 1, room.x2):
         for y in range(room.y1 + 1, room.y2):
@@ -185,7 +183,7 @@ def create_room(room):
 
 
 def create_h_tunnel(x1: int, x2: int, y: int):
-    """Create horizontal tunnel"""
+    """Create horizontal tunnel."""
     # min() and max() are used in case x1>x2
     for x in range(min(x1, x2), max(x1, x2) + 1):
         rl.variables.game_map[x][y].blocked = False
@@ -193,14 +191,14 @@ def create_h_tunnel(x1: int, x2: int, y: int):
 
 
 def create_v_tunnel(y1: int, y2: int, x: int):
-    """Create vertical tunnel"""
+    """Create vertical tunnel."""
     for y in range(min(y1, y2), max(y1, y2) + 1):
         rl.variables.game_map[x][y].blocked = False
         rl.variables.game_map[x][y].block_sight = False
 
 
 def make_map():
-    """Fill map with "unblocked" tiles"""
+    """Fill map with "unblocked" tiles."""
     # the list of objects with just the player
     rl.variables.game_objects = [rl.variables.player]
 
@@ -275,7 +273,7 @@ def make_map():
 
 
 def place_objects(room):
-    """Choose random number of monsters"""
+    """Choose random number of monsters."""
     # maximum number of monsters per room
     max_monsters = from_dungeon_level([[2, 1], [3, 4], [5, 6]])
     num_monsters = libtcod.random_get_int(0, 0, max_monsters)
@@ -451,7 +449,7 @@ def place_objects(room):
 
 
 def random_choice_index(chances):
-    """Choose one option from the list of chances, returning its index"""
+    """Choose one option from the list of chances, returning its index."""
     # the dice will land on some number between 1 and the sum of the chances
     dice = libtcod.random_get_int(0, 1, sum(chances))
 
@@ -468,7 +466,7 @@ def random_choice_index(chances):
 
 
 def random_choice(chances_dict):
-    """Choose one option from dictionary of chances, returning its key"""
+    """Choose one option from dictionary of chances, returning its key."""
     chances = list(chances_dict.values())
     strings = list(chances_dict.keys())
     return strings[random_choice_index(chances)]
@@ -485,7 +483,7 @@ def from_dungeon_level(table):
 
 
 def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
-    """Render a bar (HP, experience, etc). first calculate the widt o the bar"""
+    """Render a bar (HP, experience, etc). first calculate the widt o the bar."""
     if rl.variables.panel is None:
         return
     load_customfont()
@@ -514,7 +512,7 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
 
 
 def render_all():
-    """Draw all objects in the list"""
+    """Draw all objects in the list."""
     if rl.variables.panel is None or rl.variables.CON is None or rl.variables.fov_map is None:
         return
 
@@ -695,7 +693,7 @@ def handle_keys():
 
 
 def next_level() -> None:
-    """Advance to the next level"""
+    """Advance to the next level."""
     rl.common.message("You take a moment to rest, and recover your strength.", libtcod.light_violet)
     rl.variables.player.fighter.heal(rl.variables.player.fighter.max_hp / 2)  # heal the player by 50%
 
@@ -706,7 +704,7 @@ def next_level() -> None:
 
 
 def get_names_under_mouse() -> str:
-    """Return a string with the names of all objects under the mouse"""
+    """Return a string with the names of all objects under the mouse."""
     if rl.variables.fov_map is None:
         return
     global mouse
@@ -724,7 +722,7 @@ def get_names_under_mouse() -> str:
 
 
 def menu(header: str, options: list[str], width: int):
-    """Create a menu"""
+    """Create a menu."""
     if len(options) > 26:
         raise ValueError("Cannot have a menu with more than 26 options.")
 
@@ -769,7 +767,7 @@ def menu(header: str, options: list[str], width: int):
 
 
 def inventory_menu(header: str) -> rl.Item | None:
-    """Show a menu with each item of the inventory as an option"""
+    """Show a menu with each item of the inventory as an option."""
     if len(rl.variables.inventory) == 0:
         options = ["Inventory is empty."]
     else:
@@ -790,7 +788,7 @@ def inventory_menu(header: str) -> rl.Item | None:
 
 
 def new_game() -> None:
-    """Create a new game"""
+    """Create a new game."""
     # create object representing the player
     fighter_component = rl.Fighter(hp=100, defense=1, power=2, xp=0, death_function=player_death)
     rl.variables.player = rl.Object(
@@ -822,7 +820,7 @@ def new_game() -> None:
 
 
 def initialize_fov() -> None:
-    """Initialize field of view"""
+    """Initialize field of view."""
     # create the FOV map, according to the generated map
     rl.variables.fov_map = libtcod.map_new(rl.constants.MAP_WIDTH, rl.constants.MAP_HEIGHT)
     for y in range(rl.constants.MAP_HEIGHT):
@@ -841,7 +839,7 @@ def initialize_fov() -> None:
 
 
 def play_game() -> None:
-    """Play the game"""
+    """Play the game."""
     global key, mouse
 
     player_action = None
@@ -875,7 +873,7 @@ def play_game() -> None:
 
 
 def main_menu() -> None:
-    """Create a main menu"""
+    """Create a main menu."""
     img = libtcod.image_load("menu_background.png")
 
     while not libtcod.console_is_window_closed():
@@ -919,12 +917,12 @@ def main_menu() -> None:
 
 
 def msgbox(text: str, width: int = 50) -> None:
-    """Create a message box"""
+    """Create a message box."""
     menu(text, [], width)  # use menu() as a sort of "message box"
 
 
 def save_game() -> None:
-    """Open a new empty shelve (possibly overwriting an old one) to write the game data"""
+    """Open a new empty shelve (possibly overwriting an old one) to write the game data."""
     file = shelve.open("savegame", "n")
     file["game_map"] = rl.variables.game_map
     file["game_objects"] = rl.variables.game_objects
@@ -938,7 +936,7 @@ def save_game() -> None:
 
 
 def load_game() -> None:
-    """Open the previously saved shelve and load the game data"""
+    """Open the previously saved shelve and load the game data."""
     file = shelve.open("savegame", "r")
     rl.variables.game_map = file["game_map"]
     rl.variables.game_objects = file["game_objects"]
@@ -954,7 +952,7 @@ def load_game() -> None:
 
 
 def load_customfont() -> None:
-    """The index of the first custom tile in the file"""
+    """The index of the first custom tile in the file."""
     a = 256
 
     # The "y" is the row index, here we load the sixth row in the font file.

@@ -1,11 +1,11 @@
-"""Tile class"""
+"""Tile class."""
 
 from dataclasses import dataclass
 
 
 @dataclass
 class Tile:
-    """A tile of the map and its properties"""
+    """A tile of the map and its properties."""
 
     blocked: bool
     block_sight: bool | None = None

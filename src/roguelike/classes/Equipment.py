@@ -1,4 +1,4 @@
-"""Equipment class"""
+"""Equipment class."""
 
 from dataclasses import dataclass
 from typing import Any
@@ -10,9 +10,7 @@ from ..support.common import get_equipped_in_slot, message
 
 @dataclass
 class Equipment:
-    """An object that can be equipped, yielding bonuses.
-    Automatically adds the Item component.
-    """
+    """An object that can be equipped, yielding bonuses. Automatically adds the Item component."""
 
     slot: Any = None
     is_equipped: bool = False
@@ -21,14 +19,14 @@ class Equipment:
     max_hp_bonus: int = 0
 
     def toggle_equip(self) -> None:
-        """Toggle equip/dequip status"""
+        """Toggle equip/dequip status."""
         if self.is_equipped:
             self.dequip()
         else:
             self.equip()
 
     def equip(self) -> None:
-        """Equip equipment"""
+        """Equip equipment."""
         # if the slot is already being used, dequip whatever is there first
         old_equipment = get_equipped_in_slot(self.slot)
         if old_equipment is not None:
@@ -39,7 +37,7 @@ class Equipment:
         message("Equipped " + self.owner.name + " on " + self.slot + ".", libtcod.light_green)
 
     def dequip(self) -> None:
-        """Dequip object and show a mesage about it"""
+        """Dequip object and show a mesage about it."""
         if not self.is_equipped:
             return
         self.is_equipped = False

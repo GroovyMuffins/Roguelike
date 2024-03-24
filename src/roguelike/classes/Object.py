@@ -1,4 +1,4 @@
-"""Object class"""
+"""Object class."""
 
 import math
 from dataclasses import dataclass
@@ -14,9 +14,7 @@ from . import Item
 
 @dataclass
 class Object:
-    """This is generic object: the player, a monster, an item, the stairs...
-    it's always represented by a character on screen.
-    """
+    """This is generic object: the player, a monster, an item, the stairs... It's always represented by a character on screen."""
 
     x: int
     y: int
@@ -49,13 +47,13 @@ class Object:
             self.item.owner = self
 
     def move(self, dx: int, dy: int) -> None:
-        """Move by the given amount, if the destination is not blocked"""
+        """Move by the given amount, if the destination is not blocked."""
         if not is_blocked(self.x + dx, self.y + dy):
             self.x += dx
             self.y += dy
 
     def move_towards(self, target_x: int, target_y: int) -> None:
-        """Vector from this object to the target, and distance"""
+        """Vector from this object to the target, and distance."""
         dx = target_x - self.x
         dy = target_y - self.y
         distance = math.sqrt(dx**2 + dy**2)
@@ -67,24 +65,22 @@ class Object:
         self.move(dx, dy)
 
     def distance_to(self, other: type["Object"]) -> float:
-        """Return the distance to another object"""
+        """Return the distance to another object."""
         dx = other.x - self.x
         dy = other.y - self.y
         return math.sqrt(dx**2 + dy**2)
 
     def distance(self, x: int, y: int) -> float:
-        """Return the distance to some coordinates"""
+        """Return the distance to some coordinates."""
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
     def send_to_back(self) -> None:
-        """Make this object be drawn first,
-        so all others appear above it if they're in the same tile.
-        """
+        """Make this object be drawn first, so all others appear above it if they're in the same tile."""
         var.game_objects.remove(self)
         var.game_objects.insert(0, self)
 
     def draw(self) -> None:
-        """Set the color and then draw the character that represents this object at its position"""
+        """Set the color and then draw the character that represents this object at its position."""
         if var.fov_map is None or var.CON is None:
             return
         # only show if it's visible to the player;
@@ -96,7 +92,7 @@ class Object:
             libtcod.console_put_char(var.CON, self.x, self.y, self.char, libtcod.BKGND_NONE)
 
     def clear(self) -> None:
-        """Erase the character that represents this object"""
+        """Erase the character that represents this object."""
         if var.CON is None:
             return
         libtcod.console_put_char(var.CON, self.x, self.y, " ", libtcod.BKGND_NONE)

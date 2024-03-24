@@ -1,4 +1,4 @@
-"""Confused monster class"""
+"""Confused monster class."""
 
 from dataclasses import dataclass
 from typing import Any
