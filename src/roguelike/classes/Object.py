@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import tcod as libtcod
+from tcod import libtcodpy
 
 from ..support import variables as var
 from ..support.common import is_blocked
@@ -21,7 +22,7 @@ class Object:
     y: int
     char: int
     name: str
-    color: libtcod.Color
+    color: libtcodpy.Color
     blocks: bool = False
     always_visible: bool = False
     fighter: Any | None = None
