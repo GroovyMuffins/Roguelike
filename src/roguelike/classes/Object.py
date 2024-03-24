@@ -9,7 +9,7 @@ from tcod import libtcodpy
 
 from ..support import variables as var
 from ..support.common import is_blocked
-from . import Item
+from .Item import Item
 
 
 @dataclass
