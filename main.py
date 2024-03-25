@@ -500,15 +500,8 @@ def render_bar(x, y, total_width, name, value, maximum):
 
     bar_width = int(float(value) / maximum * total_width)
 
-    # render the background first
-    rl.variables.panel.default_bg = rl.Colors.DARKER_RED
-    rl.variables.panel.rect(x, y, total_width, 1, False, libtcodpy.BKGND_SCREEN)
-
-    # now render the bar on top
-    bar_color = rl.Colors.LIGHT_RED
-    rl.variables.panel.default_bg = bar_color
     if bar_width > 0:
-        rl.variables.panel.rect(x, y, bar_width, 1, False, libtcodpy.BKGND_SCREEN)
+        rl.variables.panel.draw_rect(x, y, bar_width, 1, 0, rl.Colors.LIGHT_RED, rl.Colors.DARK_RED, libtcodpy.BKGND_SCREEN)
 
     # finally, some centered text with the values
     rl.variables.panel.print(
@@ -516,7 +509,7 @@ def render_bar(x, y, total_width, name, value, maximum):
         y,
         f"{name}: {str(value)}/{str(maximum)}",
         rl.Colors.WHITE,
-        bar_color,
+        rl.Colors.LIGHT_RED,
         libtcodpy.BKGND_NONE,
         libtcodpy.CENTER,
     )
