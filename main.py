@@ -105,7 +105,11 @@ def closest_monster(max_range: int):
     closest_dist = max_range + 1  # start with (slightly more than) maximum range
 
     for g_object in rl.variables.game_objects:
-        if g_object.fighter and g_object != rl.variables.player and libtcod.map_is_in_fov(rl.variables.fov_map, g_object.x, g_object.y):
+        if (
+            g_object.fighter
+            and g_object != rl.variables.player
+            and libtcodpy.map_is_in_fov(rl.variables.fov_map, g_object.x, g_object.y)
+        ):
             # calculate distance between this object and the player
             dist = rl.variables.player.distance_to(g_object)
             if dist < closest_dist:  # it's closer, so remember it
