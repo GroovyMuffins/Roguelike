@@ -3,8 +3,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-import tcod as libtcod
-
+from ..support.colors import Colors
 from ..support.common import get_equipped_in_slot, message
 
 
@@ -34,11 +33,11 @@ class Equipment:
 
         # equip object and show a message about it
         self.is_equipped = True
-        message("Equipped " + self.owner.name + " on " + self.slot + ".", libtcod.light_green)
+        message("Equipped " + self.owner.name + " on " + self.slot + ".", Colors.LIGHT_GREEN)
 
     def dequip(self) -> None:
         """Dequip object and show a mesage about it."""
         if not self.is_equipped:
             return
         self.is_equipped = False
-        message("Dequipped " + self.owner.name + " from " + self.slot + ".", libtcod.light_yellow)
+        message("Dequipped " + self.owner.name + " from " + self.slot + ".", Colors.LIGHT_YELLOW)

@@ -3,9 +3,8 @@
 from dataclasses import dataclass
 from typing import Any
 
-import tcod as libtcod
-
 from ..support import variables as var
+from ..support.colors import Colors
 from ..support.common import get_equipped_in_slot, message
 
 
@@ -33,12 +32,13 @@ class Item:
 
     def pick_up(self) -> None:
         """Add to the player's inventory and remove from the map."""
-        if len(var.inventory) >= 26:
-            message("Your inventory is full, cannot pick up " + self.owner.name + ".", libtcod.red)
+        max_inventory = 26
+        if len(var.inventory) >= max_inventory:
+            message("Your inventory is full, cannot pick up " + self.owner.name + ".", Colors.RED)
         else:
             var.inventory.append(self.owner)
             var.game_objects.remove(self.owner)
-            message("You picked up a " + self.owner.name + "!", libtcod.green)
+            message("You picked up a " + self.owner.name + "!", Colors.GREEN)
 
         # special case: automatically equip, if the corresponding equipment slot is unused
         equipment = self.owner.equipment
@@ -51,7 +51,7 @@ class Item:
         var.inventory.remove(self.owner)
         self.owner.x = var.player.x
         self.owner.y = var.player.y
-        message("You dropped a " + self.owner.name + ".", libtcod.yellow)
+        message("You dropped a " + self.owner.name + ".", Colors.YELLOW)
 
         # special case: if the object has the Equipment component, dequip it before dropping
         if self.owner.equipment:

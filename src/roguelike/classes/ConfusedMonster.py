@@ -3,9 +3,10 @@
 from dataclasses import dataclass
 from typing import Any
 
-import tcod as libtcod
+from tcod import libtcodpy
 
 from ..support import constants as const
+from ..support.colors import Colors
 from ..support.common import message
 
 
@@ -20,9 +21,9 @@ class ConfusedMonster:
         """AI for a confused monster."""
         if self.num_turns > 0:  # still confused...
             # move in a random direction, and decrease the number of turns confused
-            self.owner.move(libtcod.random_get_int(0, -1, 1), libtcod.random_get_int(0, -1, 1))
+            self.owner.move(libtcodpy.random_get_int(0, -1, 1), libtcodpy.random_get_int(0, -1, 1))
             self.num_turns -= 1
         # restore the previous AI (this one will be deleted because it's not referenced anymore)
         else:
             self.owner.ai = self.old_ai
-            message("The " + self.owner.name + " is no longer confused!", libtcod.red)
+            message("The " + self.owner.name + " is no longer confused!", Colors.RED)

@@ -1,6 +1,6 @@
 """Class for basic monster."""
 
-import tcod as libtcod
+from tcod import libtcodpy
 
 from ..support import variables as var
 
@@ -11,7 +11,7 @@ class BasicMonster:
     def take_turn(self) -> None:
         """A basic monster takes its turn. If you can see it, it can see you."""
         monster = self.owner
-        if libtcod.map_is_in_fov(var.fov_map, monster.x, monster.y):
+        if libtcodpy.map_is_in_fov(var.fov_map, monster.x, monster.y):
             # move towards player if far away
             if monster.distance_to(var.player) >= 2:
                 monster.move_towards(var.player.x, var.player.y)

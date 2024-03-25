@@ -1,6 +1,6 @@
 """Global variables for the game."""
 
-from tcod import console, libtcodpy, map
+from tcod import console, map
 
 from ..classes import Object, Tile
 
@@ -9,7 +9,7 @@ game_objects: list[Object.Object] = []
 player: Object.Object | None = None
 stairs: Object.Object | None = None
 inventory: list[Object.Object] = []
-game_msgs: list[tuple[str, libtcodpy.Color]] = []
+game_msgs: list[tuple[str, tuple[int, int, int]]] = []
 game_state: str | None = None
 dungeon_level: int | None = None
 

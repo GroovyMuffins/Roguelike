@@ -3,11 +3,9 @@
 import textwrap
 from typing import Any
 
-import tcod as libtcod
-from tcod import libtcodpy
-
 from . import constants as const
 from . import variables as var
+from .colors import Colors
 
 
 def get_equipped_in_slot(slot) -> Any:
@@ -18,7 +16,7 @@ def get_equipped_in_slot(slot) -> Any:
     return None
 
 
-def message(new_msg: str, color: libtcodpy.Color = libtcod.white) -> None:
+def message(new_msg: str, color: tuple[int, int, int] = Colors.WHITE) -> None:
     """Split the message if necessary, among multiple lines."""
     new_msg_lines = textwrap.wrap(new_msg, const.MSG_WIDTH)
 

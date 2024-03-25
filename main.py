@@ -4,6 +4,7 @@ import shelve
 
 import roguelike as rl
 import tcod as libtcod
+from tcod import libtcodpy
 
 
 def check_level_up() -> None:
@@ -14,7 +15,7 @@ def check_level_up() -> None:
         rl.variables.player.level += 1
         rl.variables.player.fighter.xp -= level_up_xp
         rl.common.message(
-            f"Your battle skills grow stronger! You reached level {str(rl.variables.player.level)}!", libtcod.yellow
+            f"Your battle skills grow stronger! You reached level {str(rl.variables.player.level)}!", rl.Colors.YELLOW
         )
 
         choice = None
@@ -41,10 +42,10 @@ def check_level_up() -> None:
 def cast_heal():
     """Heal the player."""
     if rl.variables.player.fighter.hp == rl.variables.player.fighter.max_hp:
-        rl.common.message("You are already at full health.", libtcod.red)
+        rl.common.message("You are already at full health.", rl.Colors.RED)
         return "cancelled"
 
-    rl.common.message("Your wounds start to feel better!", libtcod.light_violet)
+    rl.common.message("Your wounds start to feel better!", rl.Colors.LIGHT_VIOLET)
     rl.variables.player.fighter.heal(rl.constants.HEAL_AMOUNT)
 
 
@@ -52,21 +53,21 @@ def cast_lightning():
     """Find closest enemy (inside a maximum range) and damage it."""
     monster = closest_monster(rl.constants.LIGHTNING_RANGE)
     if monster is None:  # no enemy found within maximum range
-        rl.common.message("No enemy is close enough to strike.", libtcod.red)
+        rl.common.message("No enemy is close enough to strike.", rl.Colors.RED)
         return "cancelled"
 
     # zap it!
     rl.common.message(
         f"A lightning bolt strikes the {monster.name} with a loud thunder! "
         f"The damage is {str(rl.constants.LIGHTNING_DAMAGE)} hit points.",
-        color=libtcod.light_blue,
+        color=rl.Colors.LIGHT_BLUE,
     )
     monster.fighter.take_damage(rl.constants.LIGHTNING_DAMAGE)
 
 
 def cast_confuse():
     """Ask the player for a target to confuse."""
-    rl.common.message("Left-click an enemy to confuse it, or right-click to cancel.", libtcod.light_cyan)
+    rl.common.message("Left-click an enemy to confuse it, or right-click to cancel.", rl.Colors.LIGHT_CYAN)
     monster = target_monster(rl.constants.CONFUSE_RANGE)
     if monster is None:
         return "cancelled"
@@ -75,23 +76,23 @@ def cast_confuse():
     old_ai = monster.ai
     monster.ai = rl.ConfusedMonster(old_ai)
     monster.ai.owner = monster  # tell the new component who owns it
-    rl.common.message(f"The eyes of the {monster.name} look vacant, as he starts to stumble around!", libtcod.light_green)
+    rl.common.message(f"The eyes of the {monster.name} look vacant, as he starts to stumble around!", rl.Colors.LIGHT_GREEN)
 
 
 def cast_fireball():
     """Ask the player for a target tile to throw a fireball at."""
-    rl.common.message("Left-click a target tile for the fireball, or right-click to cancel.", libtcod.light_cyan)
+    rl.common.message("Left-click a target tile for the fireball, or right-click to cancel.", rl.Colors.LIGHT_CYAN)
     (x, y) = target_tile()
     if x is None:
         return "cancelled"
     rl.common.message(
-        f"The fireball explodes, burning everything within {str(rl.constants.FIREBALL_RADIUS)} tiles!", libtcod.orange
+        f"The fireball explodes, burning everything within {str(rl.constants.FIREBALL_RADIUS)} tiles!", rl.Colors.ORANGE
     )
 
     for obj in rl.variables.game_objects:  # damage every fighter in range, including the player
         if obj.distance(x, y) <= rl.constants.FIREBALL_RADIUS and obj.fighter:
             rl.common.message(
-                f"The {obj.name} gets burned for {str(rl.constants.FIREBALL_DAMAGE)} hit points.", libtcod.orange
+                f"The {obj.name} gets burned for {str(rl.constants.FIREBALL_DAMAGE)} hit points.", rl.Colors.ORANGE
             )
             obj.fighter.take_damage(rl.constants.FIREBALL_DAMAGE)
 
@@ -121,18 +122,18 @@ def target_tile(max_range: int | None = None):
     while True:
         # render the screen. this erases the inventory
         # and shows the names of objects under the mouse.
-        libtcod.console_flush()
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
+        libtcodpy.console_flush()
+        libtcodpy.sys_check_for_event(libtcodpy.EVENT_KEY_PRESS | libtcodpy.EVENT_MOUSE, key, mouse)
         render_all()
 
         (x, y) = (mouse.cx, mouse.cy)
 
-        if mouse.rbutton_pressed or key.vk == libtcod.KEY_ESCAPE:
+        if mouse.rbutton_pressed or key.vk == libtcodpy.KEY_ESCAPE:
             return (None, None)  # cancel if the player right-clicked or pressed Escape
 
         if (
             mouse.lbutton_pressed
-            and libtcod.map_is_in_fov(rl.variables.fov_map, x, y)
+            and libtcodpy.map_is_in_fov(rl.variables.fov_map, x, y)
             and (max_range is None or rl.variables.player.distance(x, y) <= max_range)
         ):
             return (x, y)
@@ -153,19 +154,19 @@ def target_monster(max_range=None):
 
 def player_death(player):
     """The game ended!"""
-    rl.common.message("You died!", libtcod.red)
+    rl.common.message("You died!", rl.Colors.RED)
     rl.variables.game_state = "dead"
 
     # for added effect, transform the player into a corpse!
     player.char = "%"
-    player.color = libtcod.dark_red
+    player.color = rl.Colors.DARK_RED
 
 
 def monster_death(monster):
     """Transform it into a nasty corpse! it doesn't block, can't be attacked and doesn't move."""
-    rl.common.message(f"The {monster.name} is dead! You gain {str(monster.fighter.xp)} experience points.", libtcod.orange)
+    rl.common.message(f"The {monster.name} is dead! You gain {str(monster.fighter.xp)} experience points.", rl.Colors.ORANGE)
     monster.char = "%"
-    monster.color = libtcod.dark_red
+    monster.color = rl.Colors.DARK_RED
     monster.blocks = False
     monster.fighter = None
     monster.ai = None
@@ -208,12 +209,12 @@ def make_map():
     num_rooms = 0
     for _ in range(rl.constants.MAX_ROOMS):
         # random width and height
-        width = libtcod.random_get_int(0, rl.constants.ROOM_MIN_SIZE, rl.constants.ROOM_MAX_SIZE)
-        height = libtcod.random_get_int(0, rl.constants.ROOM_MIN_SIZE, rl.constants.ROOM_MAX_SIZE)
+        width = libtcodpy.random_get_int(0, rl.constants.ROOM_MIN_SIZE, rl.constants.ROOM_MAX_SIZE)
+        height = libtcodpy.random_get_int(0, rl.constants.ROOM_MIN_SIZE, rl.constants.ROOM_MAX_SIZE)
 
         # random position without going out of the boundaries of the map
-        x = libtcod.random_get_int(0, 0, rl.constants.MAP_WIDTH - width - 1)
-        y = libtcod.random_get_int(0, 0, rl.constants.MAP_HEIGHT - height - 1)
+        x = libtcodpy.random_get_int(0, 0, rl.constants.MAP_WIDTH - width - 1)
+        y = libtcodpy.random_get_int(0, 0, rl.constants.MAP_HEIGHT - height - 1)
 
         # "Rect" class makes rectangles easier to work with
         new_room = rl.Rect(x, y, width, height)
@@ -250,7 +251,7 @@ def make_map():
                 prev_y = int(prev_y)
 
                 # draw a coin (random number that is either 0 or 1)
-                if libtcod.random_get_int(0, 0, 1) == 1:
+                if libtcodpy.random_get_int(0, 0, 1) == 1:
                     # first move horizontally, then vertically
                     create_h_tunnel(prev_x, new_x, prev_y)
                     create_v_tunnel(prev_y, new_y, new_x)
@@ -267,7 +268,7 @@ def make_map():
             num_rooms += 1
 
     # create stairs at the center of the last room
-    rl.variables.stairs = rl.Object(new_x, new_y, rl.constants.STAIRSDOWN_TILE, "stairs", libtcod.white, always_visible=True)
+    rl.variables.stairs = rl.Object(new_x, new_y, rl.constants.STAIRSDOWN_TILE, "stairs", rl.Colors.WHITE, always_visible=True)
     rl.variables.game_objects.append(rl.variables.stairs)
     rl.variables.stairs.send_to_back()  # so it's drawn below the monsters
 
@@ -276,7 +277,7 @@ def place_objects(room):
     """Choose random number of monsters."""
     # maximum number of monsters per room
     max_monsters = from_dungeon_level([[2, 1], [3, 4], [5, 6]])
-    num_monsters = libtcod.random_get_int(0, 0, max_monsters)
+    num_monsters = libtcodpy.random_get_int(0, 0, max_monsters)
 
     # chance of each monster
     monster_chances = {}
@@ -288,7 +289,7 @@ def place_objects(room):
 
     # maximum number of items per room
     max_items = from_dungeon_level([[1, 1], [2, 4]])
-    num_items = libtcod.random_get_int(0, 0, max_items)
+    num_items = libtcodpy.random_get_int(0, 0, max_items)
 
     # chance of each item (by default they have a chance of 0 at level 1, which then goes up)
     item_chances = {}
@@ -303,8 +304,8 @@ def place_objects(room):
 
     for _ in range(num_monsters):
         # choose random spot for this monster
-        x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
-        y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
+        x = libtcodpy.random_get_int(0, room.x1 + 1, room.x2 - 1)
+        y = libtcodpy.random_get_int(0, room.y1 + 1, room.y2 - 1)
 
         # only place it if the tile is not blocked
         if not rl.common.is_blocked(x, y):
@@ -319,7 +320,7 @@ def place_objects(room):
                     y,
                     rl.constants.ORC_TILE,
                     "orc",
-                    libtcod.desaturated_green,
+                    rl.Colors.DESATURATED_GREEN,
                     blocks=True,
                     fighter=fighter_component,
                     ai=ai_component,
@@ -334,7 +335,7 @@ def place_objects(room):
                     y,
                     rl.constants.TROLL_TILE,
                     "troll",
-                    libtcod.darker_green,
+                    rl.Colors.DARKER_GREEN,
                     blocks=True,
                     fighter=fighter_component,
                     ai=ai_component,
@@ -349,7 +350,7 @@ def place_objects(room):
                     y,
                     rl.constants.ORC_TILE,
                     "feral orc",
-                    libtcod.crimson,
+                    rl.Colors.CRIMSON,
                     blocks=True,
                     fighter=fighter_component,
                     ai=ai_component,
@@ -364,7 +365,7 @@ def place_objects(room):
                     y,
                     rl.constants.TROLL_TILE,
                     "feral troll",
-                    libtcod.crimson,
+                    rl.Colors.CRIMSON,
                     blocks=True,
                     fighter=fighter_component,
                     ai=ai_component,
@@ -375,15 +376,15 @@ def place_objects(room):
                 ai_component = rl.BasicMonster()
 
                 monster = rl.Object(
-                    x, y, "$", "dragon", libtcod.dark_red, blocks=True, fighter=fighter_component, ai=ai_component
+                    x, y, "$", "dragon", rl.Colors.DARK_RED, blocks=True, fighter=fighter_component, ai=ai_component
                 )
 
             rl.variables.game_objects.append(monster)
 
     for _ in range(num_items):
         # choose random spot for this item
-        x = libtcod.random_get_int(0, room.x1 + 1, room.x2 - 1)
-        y = libtcod.random_get_int(0, room.y1 + 1, room.y2 - 1)
+        x = libtcodpy.random_get_int(0, room.x1 + 1, room.x2 - 1)
+        y = libtcodpy.random_get_int(0, room.y1 + 1, room.y2 - 1)
 
         # only place it if the tile is not blocked
         if not rl.common.is_blocked(x, y):
@@ -397,7 +398,7 @@ def place_objects(room):
                     y,
                     rl.constants.HEALINGPOTION_TILE,
                     "healing potion",
-                    libtcod.violet,
+                    rl.Colors.VIOLET,
                     item=item_component,
                     always_visible=True,
                 )
@@ -406,41 +407,48 @@ def place_objects(room):
                 item_component = rl.Item(use_function=cast_lightning)
 
                 item = rl.Object(
-                    x, y, "#", "scroll of lightning bolt", libtcod.light_yellow, item=item_component, always_visible=True
+                    x, y, "#", "scroll of lightning bolt", rl.Colors.LIGHT_YELLOW, item=item_component, always_visible=True
                 )
             elif choice == "fireball":
                 # create a fireball scroll (10% chance)
                 item_component = rl.Item(use_function=cast_fireball)
 
                 item = rl.Object(
-                    x, y, "#", "scroll of fireball", libtcod.light_yellow, item=item_component, always_visible=True
+                    x, y, "#", "scroll of fireball", rl.Colors.LIGHT_YELLOW, item=item_component, always_visible=True
                 )
             elif choice == "confuse":
                 # create a confuse scroll (10% chance)
                 item_component = rl.Item(use_function=cast_confuse)
 
                 item = rl.Object(
-                    x, y, "#", "scroll of confusion", libtcod.light_yellow, item=item_component, always_visible=True
+                    x, y, "#", "scroll of confusion", rl.Colors.LIGHT_YELLOW, item=item_component, always_visible=True
                 )
             elif choice == "sword":
                 # create a sword
                 equipment_component = rl.Equipment(slot="right hand", power_bonus=3)
-                item = rl.Object(x, y, rl.constants.SWORD_TILE, "sword", libtcod.sky, equipment=equipment_component)
+                item = rl.Object(x, y, rl.constants.SWORD_TILE, "sword", rl.Colors.SKY, equipment=equipment_component)
             elif choice == "shield":
                 # create a shield
                 equipment_component = rl.Equipment(slot="left hand", defense_bonus=1)
-                item = rl.Object(x, y, rl.constants.SHIELD_TILE, "shield", libtcod.dark_orange, equipment=equipment_component)
+                item = rl.Object(
+                    x, y, rl.constants.SHIELD_TILE, "shield", rl.Colors.DARK_ORANGE, equipment=equipment_component
+                )
             elif choice == "sword of awesomeness":
                 # create a sword of awesomeness
                 equipment_component = rl.Equipment(slot="right hand", power_bonus=10)
                 item = rl.Object(
-                    x, y, rl.constants.SWORD_TILE, "sword of awesomeness", libtcod.dark_sky, equipment=equipment_component
+                    x, y, rl.constants.SWORD_TILE, "sword of awesomeness", rl.Colors.DARK_SKY, equipment=equipment_component
                 )
             elif choice == "shield of awesomeness":
                 # create a shield of awesomeness
                 equipment_component = rl.Equipment(slot="left hand", defense_bonus=5)
                 item = rl.Object(
-                    x, y, rl.constants.SHIELD_TILE, "shield of awesomeness", libtcod.dark_amber, equipment=equipment_component
+                    x,
+                    y,
+                    rl.constants.SHIELD_TILE,
+                    "shield of awesomeness",
+                    rl.Colors.DARK_AMBER,
+                    equipment=equipment_component,
                 )
 
             rl.variables.game_objects.append(item)
@@ -451,7 +459,7 @@ def place_objects(room):
 def random_choice_index(chances):
     """Choose one option from the list of chances, returning its index."""
     # the dice will land on some number between 1 and the sum of the chances
-    dice = libtcod.random_get_int(0, 1, sum(chances))
+    dice = libtcodpy.random_get_int(0, 1, sum(chances))
 
     # go through all chances, keeping the sum so far
     running_sum = 0
@@ -480,7 +488,7 @@ def from_dungeon_level(table):
     return 0
 
 
-def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
+def render_bar(x, y, total_width, name, value, maximum):
     """Render a bar (HP, experience, etc). first calculate the widt o the bar."""
     if rl.variables.panel is None:
         return
@@ -489,23 +497,24 @@ def render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     bar_width = int(float(value) / maximum * total_width)
 
     # render the background first
-    rl.variables.panel.default_bg = back_color
-    rl.variables.panel.rect(x, y, total_width, 1, False, libtcod.BKGND_SCREEN)
+    rl.variables.panel.default_bg = rl.Colors.DARKER_RED
+    rl.variables.panel.rect(x, y, total_width, 1, False, libtcodpy.BKGND_SCREEN)
 
     # now render the bar on top
+    bar_color = rl.Colors.LIGHT_RED
     rl.variables.panel.default_bg = bar_color
     if bar_width > 0:
-        rl.variables.panel.rect(x, y, bar_width, 1, False, libtcod.BKGND_SCREEN)
+        rl.variables.panel.rect(x, y, bar_width, 1, False, libtcodpy.BKGND_SCREEN)
 
     # finally, some centered text with the values
     rl.variables.panel.print(
         int(x + total_width / 2),
         y,
         f"{name}: {str(value)}/{str(maximum)}",
-        libtcod.white,
+        rl.Colors.WHITE,
         bar_color,
-        libtcod.BKGND_NONE,
-        libtcod.CENTER,
+        libtcodpy.BKGND_NONE,
+        libtcodpy.CENTER,
     )
 
 
@@ -517,7 +526,7 @@ def render_all():
     if rl.variables.fov_recompute:
         # recompute FOV if needed (the player moved or something)
         rl.variables.fov_recompute = False
-        libtcod.map_compute_fov(
+        libtcodpy.map_compute_fov(
             rl.variables.fov_map,
             rl.variables.player.x,
             rl.variables.player.y,
@@ -529,25 +538,29 @@ def render_all():
     # go through all tiles, and set their background color
     for y in range(rl.constants.MAP_HEIGHT):
         for x in range(rl.constants.MAP_WIDTH):
-            visible = libtcod.map_is_in_fov(rl.variables.fov_map, x, y)
+            visible = libtcodpy.map_is_in_fov(rl.variables.fov_map, x, y)
             wall = rl.variables.game_map[x][y].block_sight
             if not visible:
                 # if it's not visible right now, the player can only see it if it's explored
                 if rl.variables.game_map[x][y].explored:
                     if wall:
-                        libtcod.console_put_char_ex(
-                            rl.variables.CON, x, y, rl.constants.WALL_TILE, libtcod.grey, libtcod.black
+                        libtcodpy.console_put_char_ex(
+                            rl.variables.CON, x, y, rl.constants.WALL_TILE, rl.Colors.GREY, rl.Colors.BLACK
                         )
                     else:
-                        libtcod.console_put_char_ex(
-                            rl.variables.CON, x, y, rl.constants.FLOOR_TILE, libtcod.grey, libtcod.black
+                        libtcodpy.console_put_char_ex(
+                            rl.variables.CON, x, y, rl.constants.FLOOR_TILE, rl.Colors.GREY, rl.Colors.BLACK
                         )
             else:
                 # it's visible
                 if wall:
-                    libtcod.console_put_char_ex(rl.variables.CON, x, y, rl.constants.WALL_TILE, libtcod.white, libtcod.black)
+                    libtcodpy.console_put_char_ex(
+                        rl.variables.CON, x, y, rl.constants.WALL_TILE, rl.Colors.WHITE, rl.Colors.BLACK
+                    )
                 else:
-                    libtcod.console_put_char_ex(rl.variables.CON, x, y, rl.constants.FLOOR_TILE, libtcod.white, libtcod.black)
+                    libtcodpy.console_put_char_ex(
+                        rl.variables.CON, x, y, rl.constants.FLOOR_TILE, rl.Colors.WHITE, rl.Colors.BLACK
+                    )
                 # since it's visible, explore it
                 rl.variables.game_map[x][y].explored = True
 
@@ -559,38 +572,31 @@ def render_all():
     rl.variables.player.draw()
 
     # blit the contents of "con" to the root console
-    libtcod.console_blit(rl.variables.CON, 0, 0, rl.constants.SCREEN_WIDTH, rl.constants.SCREEN_HEIGHT, 0, 0, 0)
+    libtcodpy.console_blit(rl.variables.CON, 0, 0, rl.constants.SCREEN_WIDTH, rl.constants.SCREEN_HEIGHT, 0, 0, 0)
 
     # prepare to render the GUI panel
-    libtcod.console_clear(rl.variables.panel)
+    libtcodpy.console_clear(rl.variables.panel)
 
     # print the game messages, one line at a time
     y = 1
     for line, color in rl.variables.game_msgs:
-        rl.variables.panel.print(int(rl.constants.MSG_X), y, line, color, libtcod.black, libtcod.BKGND_NONE, libtcod.LEFT)
+        rl.variables.panel.print(
+            int(rl.constants.MSG_X), y, line, color, rl.Colors.BLACK, libtcodpy.BKGND_NONE, libtcodpy.LEFT
+        )
         y += 1
 
     # show the player's stats
-    render_bar(
-        1,
-        1,
-        rl.constants.BAR_WIDTH,
-        "HP",
-        rl.variables.player.fighter.hp,
-        rl.variables.player.fighter.max_hp,
-        libtcod.light_red,
-        libtcod.darker_red,
-    )
+    render_bar(1, 1, rl.constants.BAR_WIDTH, "HP", rl.variables.player.fighter.hp, rl.variables.player.fighter.max_hp)
 
-    rl.variables.panel.print_(1, 3, f"Dungeon level {str(rl.variables.dungeon_level)}", libtcod.BKGND_NONE, libtcod.LEFT)
+    rl.variables.panel.print_(1, 3, f"Dungeon level {str(rl.variables.dungeon_level)}", libtcodpy.BKGND_NONE, libtcodpy.LEFT)
 
     # display names of objects under the mouse
     rl.variables.panel.print(
-        1, 0, get_names_under_mouse(), libtcod.light_gray, libtcod.black, libtcod.BKGND_NONE, libtcod.LEFT
+        1, 0, get_names_under_mouse(), rl.Colors.LIGHT_GREY, rl.Colors.BLACK, libtcodpy.BKGND_NONE, libtcodpy.LEFT
     )
 
     # blit the contents of "panel" to the root console
-    libtcod.console_blit(
+    libtcodpy.console_blit(
         rl.variables.panel, 0, 0, rl.constants.SCREEN_WIDTH, rl.constants.PANEL_HEIGHT, 0, 0, rl.constants.PANEL_Y
     )
 
@@ -620,25 +626,25 @@ def handle_keys():
     """Handle keyboard movement."""
     global key
 
-    if key.vk == libtcod.KEY_ENTER and key.lalt:
+    if key.vk == libtcodpy.KEY_ENTER and key.lalt:
         # Alt+Enter: toggle fullscreen
-        libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+        libtcodpy.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
-    elif key.vk == libtcod.KEY_ESCAPE:
+    elif key.vk == libtcodpy.KEY_ESCAPE:
         return "exit"  # exit game
 
     if rl.variables.game_state == "playing":
         # movement keys
-        if key.vk == libtcod.KEY_UP:
+        if key.vk == libtcodpy.KEY_UP:
             player_move_or_attack(0, -1)
 
-        elif key.vk == libtcod.KEY_DOWN:
+        elif key.vk == libtcodpy.KEY_DOWN:
             player_move_or_attack(0, 1)
 
-        elif key.vk == libtcod.KEY_LEFT:
+        elif key.vk == libtcodpy.KEY_LEFT:
             player_move_or_attack(-1, 0)
 
-        elif key.vk == libtcod.KEY_RIGHT:
+        elif key.vk == libtcodpy.KEY_RIGHT:
             player_move_or_attack(1, 0)
 
         else:
@@ -693,11 +699,11 @@ def handle_keys():
 
 def next_level() -> None:
     """Advance to the next level."""
-    rl.common.message("You take a moment to rest, and recover your strength.", libtcod.light_violet)
+    rl.common.message("You take a moment to rest, and recover your strength.", rl.Colors.LIGHT_VIOLET)
     rl.variables.player.fighter.heal(rl.variables.player.fighter.max_hp / 2)  # heal the player by 50%
 
     rl.variables.dungeon_level += 1
-    rl.common.message("After a rare moment of peace, you descend deeper into the heart of the dungeon...", libtcod.red)
+    rl.common.message("After a rare moment of peace, you descend deeper into the heart of the dungeon...", rl.Colors.RED)
     make_map()  # create a fresh new level!
     initialize_fov()
 
@@ -714,7 +720,7 @@ def get_names_under_mouse() -> str:
     names = [
         g_object.name
         for g_object in rl.variables.game_objects
-        if g_object.x == x and g_object.y == y and libtcod.map_is_in_fov(rl.variables.fov_map, g_object.x, g_object.y)
+        if g_object.x == x and g_object.y == y and libtcodpy.map_is_in_fov(rl.variables.fov_map, g_object.x, g_object.y)
     ]
     names = ", ".join(names)  # join the names, separated by commas
     return names.capitalize()
@@ -722,11 +728,12 @@ def get_names_under_mouse() -> str:
 
 def menu(header: str, options: list[str], width: int):
     """Create a menu."""
-    if len(options) > 26:
-        raise ValueError("Cannot have a menu with more than 26 options.")
+    max_options = 26
+    if len(options) > max_options:
+        raise ValueError(f"Cannot have a menu with more than {max_options} options.")
 
     # calculate total height for the header (after auto-wrap) and one line per option
-    header_height = libtcod.console_get_height_rect(rl.variables.CON, 0, 0, width, rl.constants.SCREEN_HEIGHT, header)
+    header_height = libtcodpy.console_get_height_rect(rl.variables.CON, 0, 0, width, rl.constants.SCREEN_HEIGHT, header)
     if header == "":
         header_height = 0
     height = len(options) + header_height
@@ -735,28 +742,28 @@ def menu(header: str, options: list[str], width: int):
     window = libtcod.console.Console(width, height)
 
     # print the header, with auto-wrap
-    window.default_fg = libtcod.white
-    window.print_rect(0, 0, width, height, header, libtcod.BKGND_NONE, libtcod.LEFT)
+    window.default_fg = rl.Colors.WHITE
+    window.print_rect(0, 0, width, height, header, libtcodpy.BKGND_NONE, libtcodpy.LEFT)
 
     # print all the options
     y = header_height
     letter_index = ord("a")
     for option_text in options:
         text = "(" + chr(letter_index) + ")" + option_text
-        window.print_(0, y, text, libtcod.BKGND_NONE, libtcod.LEFT)
+        window.print_(0, y, text, libtcodpy.BKGND_NONE, libtcodpy.LEFT)
         y += 1
         letter_index += 1
 
     # blit the contents of "window" to the root console
     x = rl.constants.SCREEN_WIDTH / 2 - width / 2
     y = rl.constants.SCREEN_HEIGHT / 2 - height / 2
-    libtcod.console_blit(window, 0, 0, width, height, 0, int(x), int(y), 1.0, 0.7)
+    libtcodpy.console_blit(window, 0, 0, width, height, 0, int(x), int(y), 1.0, 0.7)
 
     # present the root console to the player and wait for a key-press
-    libtcod.console_flush()
-    key = libtcod.console_wait_for_keypress(True)
-    if key.vk == libtcod.KEY_ENTER and key.lalt:  # (special case) Alt+Enter: toggle fullscreen
-        libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+    libtcodpy.console_flush()
+    key = libtcodpy.console_wait_for_keypress(True)
+    if key.vk == libtcodpy.KEY_ENTER and key.lalt:  # (special case) Alt+Enter: toggle fullscreen
+        libtcodpy.console_set_fullscreen(not libtcod.console_is_fullscreen())
 
     # convert the ASCII code to an index; if it corresponds to an option, return it
     index = key.c - ord("a")
@@ -791,7 +798,7 @@ def new_game() -> None:
     # create object representing the player
     fighter_component = rl.Fighter(hp=100, defense=1, power=2, xp=0, death_function=player_death)
     rl.variables.player = rl.Object(
-        0, 0, rl.constants.PLAYER_TILE, "player", libtcod.white, blocks=True, fighter=fighter_component
+        0, 0, rl.constants.PLAYER_TILE, "player", rl.Colors.WHITE, blocks=True, fighter=fighter_component
     )
 
     rl.variables.player.level = 1
@@ -808,11 +815,11 @@ def new_game() -> None:
     rl.variables.game_msgs = []
 
     # a warm welcoming message!
-    rl.common.message("Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings.", libtcod.red)
+    rl.common.message("Welcome stranger! Prepare to perish in the Tombs of the Ancient Kings.", rl.Colors.RED)
 
     # initial equipment: a dagger
     equipment_component = rl.Equipment(slot="right hand", power_bonus=2)
-    obj = rl.Object(0, 0, rl.constants.DAGGER_TILE, "dagger", libtcod.sky, equipment=equipment_component)
+    obj = rl.Object(0, 0, rl.constants.DAGGER_TILE, "dagger", rl.Colors.SKY, equipment=equipment_component)
     rl.variables.inventory.append(obj)
     equipment_component.equip()
     obj.always_visible = True
@@ -821,10 +828,10 @@ def new_game() -> None:
 def initialize_fov() -> None:
     """Initialize field of view."""
     # create the FOV map, according to the generated map
-    rl.variables.fov_map = libtcod.map_new(rl.constants.MAP_WIDTH, rl.constants.MAP_HEIGHT)
+    rl.variables.fov_map = libtcodpy.map_new(rl.constants.MAP_WIDTH, rl.constants.MAP_HEIGHT)
     for y in range(rl.constants.MAP_HEIGHT):
         for x in range(rl.constants.MAP_WIDTH):
-            libtcod.map_set_properties(
+            libtcodpy.map_set_properties(
                 rl.variables.fov_map,
                 x,
                 y,
@@ -833,7 +840,7 @@ def initialize_fov() -> None:
             )
 
     if rl.variables.CON is not None:
-        libtcod.console_clear(rl.variables.CON)  # unexplored areas start black (which is the default background color)
+        libtcodpy.console_clear(rl.variables.CON)  # unexplored areas start black (which is the default background color)
     rl.variables.fov_recompute = True
 
 
@@ -843,14 +850,14 @@ def play_game() -> None:
 
     player_action = None
 
-    mouse = libtcod.Mouse()
-    key = libtcod.Key()
-    while not libtcod.console_is_window_closed():
+    mouse = libtcodpy.Mouse()
+    key = libtcodpy.Key()
+    while not libtcodpy.console_is_window_closed():
         # render the screen
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
+        libtcodpy.sys_check_for_event(libtcodpy.EVENT_KEY_PRESS | libtcodpy.EVENT_MOUSE, key, mouse)
         render_all()
 
-        libtcod.console_flush()
+        libtcodpy.console_flush()
 
         check_level_up()
 
@@ -873,28 +880,28 @@ def play_game() -> None:
 
 def main_menu() -> None:
     """Create a main menu."""
-    img = libtcod.image_load("menu_background.png")
+    img = libtcodpy.image_load("menu_background.png")
 
-    while not libtcod.console_is_window_closed():
+    while not libtcodpy.console_is_window_closed():
         # show the background image, at twice the regular console resolution
-        libtcod.image_blit_2x(img, 0, 0, 0)
+        libtcodpy.image_blit_2x(img, 0, 0, 0)
 
         # show the game's title, and some credits!
-        libtcod.console_set_default_foreground(0, libtcod.yellow)
-        libtcod.console_print_ex(
+        libtcodpy.console_set_default_foreground(0, rl.Colors.YELLOW)
+        libtcodpy.console_print_ex(
             0,
             int(rl.constants.SCREEN_WIDTH / 2),
             int(rl.constants.SCREEN_HEIGHT / 2 - 4),
-            libtcod.BKGND_NONE,
-            libtcod.CENTER,
+            libtcodpy.BKGND_NONE,
+            libtcodpy.CENTER,
             "TOMBS OF THE ANCIENT KINGS",
         )
-        libtcod.console_print_ex(
+        libtcodpy.console_print_ex(
             0,
             int(rl.constants.SCREEN_WIDTH / 2),
             int(rl.constants.SCREEN_HEIGHT - 2),
-            libtcod.BKGND_NONE,
-            libtcod.CENTER,
+            libtcodpy.BKGND_NONE,
+            libtcodpy.CENTER,
             "By Alf",
         )
 
@@ -957,7 +964,7 @@ def load_customfont() -> None:
     # The "y" is the row index, here we load the sixth row in the font file.
     # Increase the "6" to load any new rows from the file.
     for y in range(5, 6):
-        libtcod.console_map_ascii_codes_to_font(a, 32, 0, y)
+        libtcodpy.console_map_ascii_codes_to_font(a, 32, 0, y)
         a += 32
 
 
@@ -967,9 +974,9 @@ def load_customfont() -> None:
 
 # The font has 32 chars in a row, and there's a total of 10 rows.
 # Increase the "10" when you add new rows to the sample font file.
-libtcod.console_set_custom_font("TiledFont.png", libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD, 32, 10)
-libtcod.console_init_root(rl.constants.SCREEN_WIDTH, rl.constants.SCREEN_HEIGHT, "python/roguebasin_tombs", False)
-libtcod.sys_set_fps(rl.constants.LIMIT_FPS)
+libtcodpy.console_set_custom_font("TiledFont.png", libtcodpy.FONT_TYPE_GREYSCALE | libtcodpy.FONT_LAYOUT_TCOD, 32, 10)
+libtcodpy.console_init_root(rl.constants.SCREEN_WIDTH, rl.constants.SCREEN_HEIGHT, "python/roguebasin_tombs", False)
+libtcodpy.sys_set_fps(rl.constants.LIMIT_FPS)
 rl.variables.CON = libtcod.console.Console(rl.constants.MAP_WIDTH, rl.constants.MAP_HEIGHT)
 rl.variables.panel = libtcod.console.Console(rl.constants.SCREEN_WIDTH, rl.constants.PANEL_HEIGHT)
 

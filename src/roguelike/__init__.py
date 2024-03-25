@@ -10,3 +10,4 @@ from .classes.Object import Object
 from .classes.Rect import Rect
 from .classes.Tile import Tile
 from .support import common, constants, variables
+from .support.colors import Colors
