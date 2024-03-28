@@ -8,7 +8,7 @@ from tcod import libtcodpy
 
 from ..support import variables as var
 from ..support.common import is_blocked
-from .Item import Item
+from .item import Item
 
 
 @dataclass
