@@ -2,13 +2,14 @@
 
 from tcod import console, map
 
-from ..classes import Object, Tile
+from ..classes.object import Object
+from ..classes.tile import Tile
 
-game_map: list[list[Tile.Tile]] = []
-game_objects: list[Object.Object] = []
-player: Object.Object | None = None
-stairs: Object.Object | None = None
-inventory: list[Object.Object] = []
+game_map: list[list[Tile]] = []
+game_objects: list[Object] = []
+player: Object | None = None
+stairs: Object | None = None
+inventory: list[Object] = []
 game_msgs: list[tuple[str, tuple[int, int, int]]] = []
 game_state: str | None = None
 dungeon_level: int | None = None
